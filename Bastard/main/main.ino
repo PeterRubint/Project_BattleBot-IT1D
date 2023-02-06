@@ -1,48 +1,68 @@
-#define SERVO_A1 5 //LEFT WHEEL
-#define SERVO_A2 6 //PINS
-#define SERVO_B1 9 //RIGHT WHEEL
-#define SERVO_B2 10 //PINS
+/* +++++++++[LIBRARIES]+++++++++*/
 
+// NEOPIXEL
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
-#define PIN  4   // Arduino pin that connects to NeoPixel
-#define NUM_PIXELS     4  // The number of LEDs (pixels) on NeoPixel
-Adafruit_NeoPixel pixels(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
-#define DELAYVAL 500
+/* +++++++++[PINS]+++++++++*/
 
-int trigPin = 13;    // Trigger
-int echoPin = 12;    // Echo
+// WHEEL SERVOS A = LEFT B = RIGHT 
+const int SERVO_A1 = 5;
+const int SERVO_A2 = 6;
+const int SERVO_B1 = 9;
+const int SERVO_B2 = 10;
+
+// WHEEL SENSORS
+const int R1 = 7;
+const int R2 = 8;
+
+// NEOPIXEL
+const int  NPX_PIN = 4;   // Arduino pin that connects to NeoPixel
+const int NUM_PIXELS = 4;  // The number of LEDs (pixels) on NeoPixel
+Adafruit_NeoPixel pixels(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800); //Initialize Neopixel object
+
+// ULTRASONIC DISTANCE SENSOR
+const int trigPin = 13;    // Trigger
+const int echoPin = 12;    // Echo
 long duration, cm;
 
+/* +++++++++[CODE]+++++++++*/
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(SERVO_A1,INPUT); //LEFT
+
+  pinMode(SERVO_A1,INPUT); //LEFT WHEEL
   pinMode(SERVO_A2,INPUT);
 
-  pinMode(SERVO_B1,INPUT); //RIGHT
+  pinMode(SERVO_B1,INPUT); //RIGHT WHEEL
   pinMode(SERVO_B2,INPUT);
+
+  pinMode(trigPin, OUTPUT); // UDS Trigger
+  pinMode(echoPin, INPUT);  // UDS Echo
 
   pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
   for(int i=0; i<NUM_PIXELS; i++) { //Turn LEDs off
       pixels.setPixelColor(i, pixels.Color(0, 0, 0));
       pixels.show();
   }
-//Serial Port begin
+  //Serial Port begin
   Serial.begin (9600);
-  //Define inputs and outputs
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+
+  
+  
 
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 
+}
+
+/* +++++++++[FUNCTIONS]+++++++++*/
+
+float measureDistance() {
   // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
   digitalWrite(trigPin, LOW);
@@ -63,39 +83,12 @@ void loop() {
   Serial.print(cm);
   Serial.print("cm");
   Serial.println();
-  
 
-  while (cm>20){
-    green();
-    moveForward();
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(5);
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-   
-    // Read the signal from the sensor: a HIGH pulse whose
-    // duration is the time (in microseconds) from the sending
-    // of the ping to the reception of its echo off of an object.
-    pinMode(echoPin, INPUT);
-    duration = pulseIn(echoPin, HIGH);
-   
-    // Convert the time into a distance
-    cm = (duration/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
-  
-    Serial.print(cm);
-    Serial.print("cm");
-    Serial.println();
-  }
-  if (cm<=20){
-    red();
-    stop();
-  }
- 
-
+  return cm;
 }
 
-void moveForward() {
+void moveForward() { // Moves the robot forward
+
   analogWrite(SERVO_A1, 250); // LEFT WHEEL SPIN FORWARD
   analogWrite(SERVO_A2, 0);
 
@@ -103,14 +96,18 @@ void moveForward() {
   analogWrite(SERVO_B2, 0);
 }
 
-void stop() {
+void stop() { // Stops both wheels
+
   analogWrite(SERVO_A1, 0);
   analogWrite(SERVO_B1, 0);
+  
 }
 
-void turnRight() {
+void turnRight() { // Turns the robot right
+
   analogWrite(SERVO_A1,250);
   analogWrite(SERVO_B1,0);
+
 }
 
 

@@ -8,8 +8,8 @@
 Adafruit_NeoPixel pixels(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500
 
-int trigPin = 12;    // Trigger
-int echoPin = 13;    // Echo
+int trigPin = 2;    // Trigger
+int echoPin = 3;    // Echo
 long duration, cm;
 
 void setup() {
