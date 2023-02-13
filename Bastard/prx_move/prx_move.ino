@@ -68,6 +68,7 @@ void loop() {
   while (cm>20){
     green();
     moveForward();
+
     digitalWrite(trigPin, LOW);
     delayMicroseconds(5);
     digitalWrite(trigPin, HIGH);
@@ -88,24 +89,39 @@ void loop() {
     Serial.println();
   }
   if (cm<=20){
-    red();
-    stop();
+    turnAround();
   }
  
 
 }
 
 void moveForward() {
-  analogWrite(SERVO_A1, 250); // LEFT WHEEL SPIN FORWARD
+  analogWrite(SERVO_A1, 240); // LEFT WHEEL SPIN FORWARD
   analogWrite(SERVO_A2, 0);
 
   analogWrite(SERVO_B1, 250); // RIGHT WHEEL SPIN FORWARD
   analogWrite(SERVO_B2, 0);
 }
+void moveBack() {
+  analogWrite(SERVO_A1, 0); // LEFT WHEEL SPIN BACKWARD
+  analogWrite(SERVO_A2, 240);
+
+  analogWrite(SERVO_B1, 0); // RIGHT WHEEL SPIN BACKWARD
+  analogWrite(SERVO_B2, 250);
+
+  
+}
 
 void stop() {
   analogWrite(SERVO_A1, 0);
   analogWrite(SERVO_B1, 0);
+}
+
+void turnAround() {
+    red();
+    moveBack();
+    turnRight();
+    delay(1000);
 }
 
 void turnRight() {

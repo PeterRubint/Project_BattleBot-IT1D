@@ -15,15 +15,26 @@ Servo myservo;  // create servo object to control a servo
 int pos = 0;    // variable to store the servo position
 
 void setup() {
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+  myservo.attach(2);  // attaches the servo on pin 9 to the servo object
+  openGrip();
+  delay(30);
+  closeGrip();
 }
 
 void loop() {
+  
+  
+}
+
+void openGrip() {
   for (pos = 40; pos <= 120; pos += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
     myservo.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15 ms for the servo to reach the position
   }
+}
+
+void closeGrip() {
   for (pos = 120; pos >= 40; pos -= 1) { // goes from 180 degrees to 0 degrees
     myservo.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15 ms for the servo to reach the position

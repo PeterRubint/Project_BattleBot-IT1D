@@ -6,7 +6,15 @@
 #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
-/* +++++++++[PINS]+++++++++*/
+// SERVO
+#include <Servo.h>
+
+/* +++++++++[DECLARATIONS]+++++++++*/
+
+// GRIPPER
+int pos = 120;    // variable to store the servo position
+Servo myservo;  // create servo object to control a servo
+
 
 // WHEEL SERVOS A = LEFT B = RIGHT 
 const int SERVO_A1 = 5;
@@ -21,7 +29,7 @@ const int R2 = 8;
 // NEOPIXEL
 const int  NPX_PIN = 4;   // Arduino pin that connects to NeoPixel
 const int NUM_PIXELS = 4;  // The number of LEDs (pixels) on NeoPixel
-Adafruit_NeoPixel pixels(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800); //Initialize Neopixel object
+Adafruit_NeoPixel pixels(NUM_PIXELS, NPX_PIN, NEO_GRB + NEO_KHZ800); //Initialize Neopixel object
 
 // ULTRASONIC DISTANCE SENSOR
 const int trigPin = 13;    // Trigger
@@ -33,11 +41,16 @@ long duration, cm;
 void setup() {
   // put your setup code here, to run once:
 
+  myservo.attach(2);  // attaches the servo on pin 2 to the servo object
+
   pinMode(SERVO_A1,INPUT); //LEFT WHEEL
   pinMode(SERVO_A2,INPUT);
 
   pinMode(SERVO_B1,INPUT); //RIGHT WHEEL
   pinMode(SERVO_B2,INPUT);
+
+  pinMode(R1,INPUT); // WHEEL SENSORS
+  pinMode(R2,INPUT);
 
   pinMode(trigPin, OUTPUT); // UDS Trigger
   pinMode(echoPin, INPUT);  // UDS Echo
@@ -49,7 +62,6 @@ void setup() {
   }
   //Serial Port begin
   Serial.begin (9600);
-
   
   
 
@@ -57,6 +69,13 @@ void setup() {
 }
 
 void loop() {
+  
+  measureDistance();
+  green();
+  while (measureDistance() < 20){
+    red();
+  }
+
 
 }
 
@@ -126,4 +145,18 @@ void green() { //Turns all pixels green
       pixels.show();
   }
 
+}
+void openGrip() {
+  for (pos = 40; pos <= 120; pos += 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(10);                       // waits 15 ms for the servo to reach the position
+  }
+}
+
+void closeGrip() {
+  for (pos = 120; pos >= 40; pos -= 1) { // goes from 180 degrees to 0 degrees
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(10);                       // waits 15 ms for the servo to reach the position
+  }
 }
