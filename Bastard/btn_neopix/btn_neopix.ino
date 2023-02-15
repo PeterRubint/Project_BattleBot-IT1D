@@ -3,6 +3,7 @@
 #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
+
 #define PIN  4   // Arduino pin that connects to NeoPixel
 #define NUM_PIXELS     4  // The number of LEDs (pixels) on NeoPixel
 Adafruit_NeoPixel pixels(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800);

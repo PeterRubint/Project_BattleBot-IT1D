@@ -12,7 +12,7 @@
 /* +++++++++[DECLARATIONS]+++++++++*/
 
 // GRIPPER
-int pos = 120;    // variable to store the servo position
+int pos = 0;    // variable to store the servo position
 Servo myservo;  // create servo object to control a servo
 
 
@@ -69,7 +69,7 @@ void setup() {
 }
 
 void loop() {
-  
+  moveForward();
   measureDistance();
   green();
   while (measureDistance() < 20){
