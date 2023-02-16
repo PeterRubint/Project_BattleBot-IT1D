@@ -41,9 +41,9 @@ long duration, cm;
 void setup() {
   // put your setup code here, to run once:
 
-  myservo.attach(2);  // attaches the servo on pin 2 to the servo object
+  //myservo.attach(2);  // attaches the servo on pin 2 to the servo object
 
-  pinMode(SERVO_A1,INPUT); //LEFT WHEEL
+  pinMode(SERVO_A1,INPUT); //LEFT WHEEL 1 = forward 2 = backward
   pinMode(SERVO_A2,INPUT);
 
   pinMode(SERVO_B1,INPUT); //RIGHT WHEEL
@@ -69,12 +69,8 @@ void setup() {
 }
 
 void loop() {
-  moveForward();
-  measureDistance();
-  green();
-  while (measureDistance() < 20){
-    red();
-  }
+
+  
 
 
 }
@@ -106,28 +102,33 @@ float measureDistance() {
   return cm;
 }
 
-void moveForward() { // Moves the robot forward
-
-  analogWrite(SERVO_A1, 250); // LEFT WHEEL SPIN FORWARD
-  analogWrite(SERVO_A2, 0);
-
-  analogWrite(SERVO_B1, 250); // RIGHT WHEEL SPIN FORWARD
-  analogWrite(SERVO_B2, 0);
+void forward(){
+    green();
+    digitalWrite(SERVO_A1,HIGH);
+    digitalWrite(SERVO_B1,HIGH);
+}
+void stop(){
+    digitalWrite(SERVO_A1,LOW);
+    digitalWrite(SERVO_B1,LOW);
 }
 
-void stop() { // Stops both wheels
-
-  analogWrite(SERVO_A1, 0);
-  analogWrite(SERVO_B1, 0);
-  
+void spinLeft(){
+    digitalWrite(SERVO_A2,HIGH);
+    digitalWrite(SERVO_B1,HIGH);
+    delay(1000);
+    stop();
+    
 }
 
-void turnRight() { // Turns the robot right
-
-  analogWrite(SERVO_A1,250);
-  analogWrite(SERVO_B1,0);
-
+void readWheelSpeed(){
+    int sensorLeft = analogRead(7);
+    Serial.print("LEFT");
+    Serial.println(sensorLeft);
+    int sensorRight = analogRead(8);
+    Serial.print("RIGHT");
+    Serial.println(sensorRight);
 }
+
 
 
 void red() { //Turns all pixels red
