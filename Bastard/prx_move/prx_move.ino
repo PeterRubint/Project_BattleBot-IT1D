@@ -43,11 +43,11 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
- while (measureDistance()>20 && measureDistance() != 0){
+ while (measureDistance()>10 && measureDistance() != 0){
     green();
     moveForward();
 
-    if (cm<=20){
+    if (cm<=10){
       red();
       turnRight();
     }
@@ -106,9 +106,10 @@ void stop() {
 
 
 void turnRight() { // Near 90 degree turn to the right
+  stop();
   digitalWrite(SERVO_A1,HIGH);
   digitalWrite(SERVO_B2,HIGH);
-  delay(800);
+  delay(400);
   stop();
 }
 
