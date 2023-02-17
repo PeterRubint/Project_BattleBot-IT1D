@@ -43,7 +43,22 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
-  // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
+ while (measureDistance()>20 && measureDistance() != 0){
+    green();
+    moveForward();
+
+    if (cm<=20){
+      red();
+      turnRight();
+    }
+
+  }
+  
+ 
+
+}
+double measureDistance(){
+   // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
   digitalWrite(trigPin, LOW);
   delayMicroseconds(5);
@@ -63,38 +78,9 @@ void loop() {
   Serial.print(cm);
   Serial.print("cm");
   Serial.println();
-  
 
-  while (cm>20){
-    green();
-    moveForward();
-
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(5);
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-   
-    // Read the signal from the sensor: a HIGH pulse whose
-    // duration is the time (in microseconds) from the sending
-    // of the ping to the reception of its echo off of an object.
-    pinMode(echoPin, INPUT);
-    duration = pulseIn(echoPin, HIGH);
-   
-    // Convert the time into a distance
-    cm = (duration/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
-  
-    Serial.print(cm);
-    Serial.print("cm");
-    Serial.println();
-  }
-  if (cm<=20){
-    turnAround();
-  }
- 
-
+  return cm;
 }
-
 void moveForward() {
   analogWrite(SERVO_A1, 240); // LEFT WHEEL SPIN FORWARD
   analogWrite(SERVO_A2, 0);
@@ -117,16 +103,13 @@ void stop() {
   analogWrite(SERVO_B1, 0);
 }
 
-void turnAround() {
-    red();
-    moveBack();
-    turnRight();
-    delay(1000);
-}
 
-void turnRight() {
-  analogWrite(SERVO_A1,250);
-  analogWrite(SERVO_B1,0);
+
+void turnRight() { // Near 90 degree turn to the right
+  digitalWrite(SERVO_A1,HIGH);
+  digitalWrite(SERVO_B2,HIGH);
+  delay(800);
+  stop();
 }
 
 
