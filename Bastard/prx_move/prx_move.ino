@@ -1,7 +1,7 @@
-#define SERVO_A1 5 //LEFT WHEEL
-#define SERVO_A2 6 //PINS
-#define SERVO_B1 9 //RIGHT WHEEL
-#define SERVO_B2 10 //PINS
+#define SERVO_A1 6 //LEFT WHEEL
+#define SERVO_A2 5 //PINS
+#define SERVO_B1 3 //RIGHT WHEEL
+#define SERVO_B2 11 //PINS
 
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
@@ -13,8 +13,8 @@
 Adafruit_NeoPixel pixels(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500
 
-int trigPin = 13;    // Trigger
-int echoPin = 12;    // Echo
+int trigPin = 8;    // Trigger
+int echoPin = 7;    // Echo
 long duration, cm;
 
 
@@ -49,6 +49,8 @@ void loop() {
 
     if (cm<=10){
       red();
+      stop();
+      moveBack();
       turnRight();
     }
 
@@ -106,7 +108,6 @@ void stop() {
 
 
 void turnRight() { // Near 90 degree turn to the right
-  stop();
   digitalWrite(SERVO_A1,HIGH);
   digitalWrite(SERVO_B2,HIGH);
   delay(400);
