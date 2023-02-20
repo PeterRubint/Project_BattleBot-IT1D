@@ -68,8 +68,7 @@ void loop(){
         if(measureDistance()<=10){
             lightRed();
             stop();
-            lookRight();
-            lookLeft();
+            lookAround();
         }
     }
 }
@@ -96,12 +95,27 @@ void closeGrip(){
 }
 
 // swivel methods
-void lookAround(){
-    lookLeft();
-    lookRight();
-    resetSwivel();
-    Serial.println("Scanning");
-  
+void decision(){
+    int result = lookAround();
+    if(result < 90){
+        Serial.print(result);
+    }
+    else if(result < 180){
+        Serial.print(result);
+    }
+}
+int lookAround(){
+    swivel.attach(10);
+    swivel.write(0);
+    if(measureDistance() > 20){
+        swivel.detach();
+        return swivel.read();
+    }
+    swivel.write(180);
+    else if(measureDistance() > 20){
+        swivel.detach();
+        return swivel.read();
+    }
 }
 
 void lookRight(){
@@ -116,7 +130,7 @@ void lookRight(){
 }
 void lookLeft(){
 
-    Serial.println("Look left")
+    Serial.println("Look left");
     swivel.attach(10);
     int currentPos = swivel.read();
     for (int pos = currentPos; pos == 0; pos--){
