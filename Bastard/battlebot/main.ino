@@ -39,7 +39,6 @@ void setup(){
         pinMode(9,INPUT);
     //swivel
         pinMode(10,INPUT);
-        swivel.attach(10);
     //wheels
         pinMode(motorLeftForward,INPUT); 
         pinMode(motorLeftBackwards,INPUT);
@@ -53,19 +52,16 @@ void setup(){
     //reflecance sensor
 
     //methods
+    swivel.attach(10);
      if(swivel.read() != 90){
             swivel.write(90);
+            swivel.detach();
             
     }
     stop();
 }
 
 void loop(){
-    //swivelReset
-    if(swivelReset){
-       
-        swivelReset = false;
-    }
     
     while (measureDistance()>10 && measureDistance() != 0){
         lightGreen();
@@ -73,24 +69,13 @@ void loop(){
         if(distanceInCM<=10){
             lightRed();
             stop();
-            turn();
+            lookAround();
         }
     }
 }
 
 //logic 
-void turn(){
-    if(lookAround() > 100){
-        turnLeft();
-    }
-    else if( lookAround() < 80){
-        turnRight();
-    }
-    else{
-        //turn();
-        Serial.println("Repeat scan");
-    }
-}
+
 
 // gripper methods
 void openGrip(){
@@ -108,24 +93,31 @@ void closeGrip(){
         gripper.write(pos);
         delay(15);
     }
-    gripper.detach();
 }
 
 // swivel methods
-int lookAround(){
-    //swivel.attach(11);
-    for(int pos = 0; pos <= 180; pos++){
-        swivel.write(pos);
-        if(measureDistance() > 50){
-            Serial.println(swivel.read());
-            return swivel.read();
-        }
-        else {
-           // lookAround();
+void lookAround(){
+    swivel.attach(10);
+    int currentPos = swivel.read();
+    if(currentPos != 180){
+        for(int pos = currentPos; pos <= 180; pos++){
+            swivel.write(pos);
         }
     }
+    if(currentPos == 180){
+        for(int pos = currentPos; pos > 0; pos--){
+            swivel.write(pos);
+        }
+    }
+    swivel.detach();
 }
 
+void resetSwivel(){
+
+    swivel.attach(10);
+    swivel.write(90);
+    swivel.detach();
+}
 //ultrasonic
 long measureDistance(){
     digitalWrite(trigger,LOW);
