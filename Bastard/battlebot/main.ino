@@ -165,6 +165,8 @@ void turnRight(){
     stop();
     analogWrite(motorRightBackwards,255);
     analogWrite(motorLeftForward,255);
+    delay(400);
+    stop();
 }
 
 void measureWheelSpeed(){
