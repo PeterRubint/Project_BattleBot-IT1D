@@ -13,17 +13,17 @@ Servo swivel;
 bool swivelReset = true;
 
 //ultrasonic
-#define trigger 10
-#define echo 9
+#define trigger 8
+#define echo 7
 long distanceInCM;
 
 //wheels
-#define motorLeftForward 5
-#define motorLeftBackwards 6
-#define motorRightForward 12
-#define motorRightBackwards 13
-#define sensorRight 8
-#define sensorLeft 7
+#define motorLeftForward 6
+#define motorLeftBackwards 5
+#define motorRightForward 3
+#define motorRightBackwards 11
+#define sensorRight 1
+#define sensorLeft 2
 
 //neo pixel
 #define pixelPin 4
@@ -36,10 +36,10 @@ void setup(){
     //Neo Pixel
         neoPixel.begin();
     //gripper
-        pinMode(2,INPUT);
-        swivel.attach(11);
+        pinMode(9,INPUT);
     //swivel
-        pinMode(11,INPUT);
+        pinMode(10,INPUT);
+        swivel.attach(10);
     //wheels
         pinMode(motorLeftForward,INPUT); 
         pinMode(motorLeftBackwards,INPUT);
@@ -53,15 +53,17 @@ void setup(){
     //reflecance sensor
 
     //methods
+     if(swivel.read() != 90){
+            swivel.write(90);
+            
+    }
+    stop();
 }
 
 void loop(){
     //swivelReset
     if(swivelReset){
-        if(!(swivel.read() == 90)){
-            swivel.write(90);
-            
-        }
+       
         swivelReset = false;
     }
     
@@ -151,6 +153,8 @@ void forward(){
 void stop(){
     analogWrite(motorLeftForward,0);
     analogWrite(motorRightForward,0);
+    analogWrite(motorLeftBackwards,0);
+    analogWrite(motorRightBackwards,0);
 }
 
 void turnLeft(){
