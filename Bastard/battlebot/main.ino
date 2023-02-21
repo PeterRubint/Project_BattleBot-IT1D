@@ -10,7 +10,8 @@ Servo gripper;
 int gripperPosition;
 // swivel servo 
 Servo swivel;
-bool swivelReset = true;
+#define swivelPin 10
+bool left,front,right = false;
 
 //ultrasonic
 #define trigger 8
@@ -38,7 +39,7 @@ void setup(){
     //gripper
         pinMode(9,INPUT);
     //swivel
-        pinMode(10,INPUT);
+        pinMode(swivelPin,INPUT);
     //wheels
         pinMode(motorLeftForward,INPUT); 
         pinMode(motorLeftBackwards,INPUT);
@@ -52,33 +53,43 @@ void setup(){
     //reflecance sensor
 
     //methods
-    swivel.attach(10);
-     if(swivel.read() != 90){
-        swivel.write(90);            
-    }
-    swivel.detach();
-    stop();
+    swivel.attach(swivelPin);
+    swivel.write(90);
 }
 
 void loop(){
     
-    while (measureDistance()>10 && measureDistance() != 0){
-        lightGreen();
-        forward();
-        if(measureDistance()<=10){
-            lightRed();
-            stop();
-            lookAround();
+    forward();
+    lightGreen();
+    if(measureDistance() <= 15){
+        front = true;
+        stop();
+        lightRed();
+        lookAround();
+        if(evaluate() == "I can go right!" || evaluate() == "I can go right or left!"){
+            turnRight();
         }
+        else if (evaluate() == "I can go left!")
+        {
+            turnLeft();
+        }
+        else if (evaluate() == "Walls everywhere!"){
+            stop();
+            
+        }
+        
     }
+    else{
+        front = false;
+    }
+    Serial.println(evaluate());
+    delay(500);
 }
-
-//logic 
 
 
 // gripper methods
 void openGrip(){
-    gripper.attach(2);
+    gripper.attach(9);
     for(int pos = 40; pos >= 120; pos++){
         gripper.write(pos);
         delay(15);
@@ -87,7 +98,7 @@ void openGrip(){
 }
 
 void closeGrip(){
-    gripper.attach(2);
+    gripper.attach(9);
     for(int pos = 120; pos >= 40; pos--){
         gripper.write(pos);
         delay(15);
@@ -95,62 +106,81 @@ void closeGrip(){
 }
 
 // swivel methods
-void decision(){
-    int result = lookAround();
-    if(result < 90){
-        Serial.print(result);
-    }
-    else if(result < 180){
-        Serial.print(result);
-    }
-}
-int lookAround(){
-    swivel.attach(10);
-    swivel.write(0);
-    if(measureDistance() > 20){
-        swivel.detach();
-        return swivel.read();
-    }
-    swivel.write(180);
-    else if(measureDistance() > 20){
-        swivel.detach();
-        return swivel.read();
-    }
-}
-
-void lookRight(){
-
-    Serial.println("Look right");
-    swivel.attach(10);
-    int currentPos = swivel.read();
-    for (int pos = currentPos; pos < 180; pos++){
-        swivel.write(pos);
-    }
-    swivel.detach();
-}
-void lookLeft(){
-
-    Serial.println("Look left");
-    swivel.attach(10);
-    int currentPos = swivel.read();
-    for (int pos = currentPos; pos == 0; pos--){
-        swivel.write(pos);
-    }
-    swivel.detach();
-}
-
 void resetSwivel(){
 
     swivel.attach(10);
     swivel.write(90);
-    swivel.detach();
+}
+void lookRight(){
+    int pos = swivel.read(); // SHOULD BE 90
+    for(int i = pos; i >= 0; i--){
+        swivel.write(i);
+    }
+    delay(1000);
+    if(measureDistance() <= 15){
+        right = true;
+    }
+    else{
+        right = false;
+    }
+}
+void lookLeft(){
+
+    int pos = swivel.read(); // SHOULD BE 90
+    for(int i = pos; i <= 190; i++){
+        swivel.write(i);
+    }
+    delay(1000);
+    if(measureDistance() <= 15){
+        left = true;
+    }
+    else{
+        left = false;
+    }
+
+}
+void lookAround(){
+    lookLeft();
+    delay(500);
+    resetSwivel();
+    delay(500);
+    lookRight();
+    delay(500);
+    resetSwivel();
+    delay(500);
+}
+
+String evaluate(){
+    if(front == true && left == true && right == true){
+        return "Walls everywhere!";
+    }
+    else if (front == false)
+    {
+        return "I can go forward!";
+    }
+    else if (front == true && left == false && right == true)
+    {
+        return "I can go left!";
+    }
+    else if (front == true && left == true && right == false)
+    {
+        return "I can go right";
+    }
+    else if (front == true && left == false && right == false)
+    {
+        return "I can go right or left!";
+    }
+    else{
+        return "No walls detected!";
+    }
+    
 }
 //ultrasonic
 long measureDistance(){
     digitalWrite(trigger,LOW);
     delayMicroseconds(5);
     digitalWrite(trigger,HIGH);
-    delayMicroseconds(10);
+    delayMicroseconds(swivelPin);
     digitalWrite(trigger,LOW);
 
     distanceInCM = (pulseIn(echo,HIGH)/2) / 29.1;
@@ -165,8 +195,8 @@ void printDistance(long distanceInCM){
 
 //wheels
 void forward(){
-    analogWrite(motorLeftForward,255);
-    analogWrite(motorRightForward,255);
+    analogWrite(motorLeftForward,200);
+    analogWrite(motorRightForward,200);
 }
 
 void stop(){
@@ -178,17 +208,17 @@ void stop(){
 
 void turnLeft(){
     stop();
-    analogWrite(motorLeftBackwards,255);
-    analogWrite(motorRightForward,255);
-    delay(400);
+    analogWrite(motorLeftBackwards,200);
+    analogWrite(motorRightForward,200);
+    delay(600);
     stop();
 }
 
 void turnRight(){
     stop();
-    analogWrite(motorRightBackwards,255);
-    analogWrite(motorLeftForward,255);
-    delay(400);
+    analogWrite(motorRightBackwards,200);
+    analogWrite(motorLeftForward,200);
+    delay(600);
     stop();
 }
 

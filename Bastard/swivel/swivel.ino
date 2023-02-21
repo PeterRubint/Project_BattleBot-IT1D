@@ -18,9 +18,6 @@ void setup(){
     pinMode(echo,INPUT);
     pinMode(trigger, OUTPUT);
 
-
-    
-
 }
 
 void loop(){
