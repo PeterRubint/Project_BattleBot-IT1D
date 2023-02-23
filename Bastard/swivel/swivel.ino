@@ -13,8 +13,6 @@ bool left,front,right = false;
 void setup(){
 
     Serial.begin(9600);
-    swivel.attach(swivelPin);
-    swivel.write(90);
     pinMode(echo,INPUT);
     pinMode(trigger, OUTPUT);
 
@@ -22,16 +20,7 @@ void setup(){
 
 void loop(){
 
-    if(measureDistance() <= 10){
-        front = true;
-        lookAround();
-    }
-    else{
-        front = false;
-    }
-    Serial.println(evaluate());
-    delay(500);
-    
+    measureDistance();
 
 }
 
@@ -113,7 +102,7 @@ long measureDistance(){
     digitalWrite(trigger,LOW);
 
     distanceInCM = (pulseIn(echo,HIGH)/2) / 29.1;
-    // Serial.println(distanceInCM);
+    Serial.println(distanceInCM);
     return distanceInCM;
 }
 
