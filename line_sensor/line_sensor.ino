@@ -1,13 +1,9 @@
- #include <Adafruit_NeoPixel.h>
-#include <SoftwareSerial.h>
+#include <Adafruit_NeoPixel.h>
 #include <QTRSensors.h>
 const int PIXEL_PIN=4;
 const int PIXEL_NUMBER=4;
 Adafruit_NeoPixel leds(PIXEL_NUMBER,PIXEL_PIN,NEO_RGB +NEO_KHZ800);
-// bluetooth pins
-const int BT_R=12;
-const int BT_T=13;
-SoftwareSerial BT_module(BT_R,BT_T);
+
 //motor pins
 const int  MOTOR_A1=11;
 const int MOTOR_A2=5;
@@ -15,6 +11,11 @@ const int MOTOR_B1=6;
 const int MOTOR_B2=9;
 const int MOTOR_R1=3;
 const int MOTOR_R2=2;
+//motor constants
+const int MINIMUM_SPEED=200;
+const int MAXIMUM_SPEED=255;
+const int KD=5;
+const int KP=2;
 //colors 
 const uint32_t RED=leds.Color(255,0,0);
 const uint32_t YELLOW=leds.Color(234,255,0);
@@ -23,6 +24,15 @@ const uint32_t BLUE=leds.Color(0,0,255);
 QTRSensors lineSensors;
 const int SENSOR_COUNT=8;
 int sensorValues[SENSOR_COUNT];
+int pos=0;
+int error=0;
+int lastError=0;
+
+
+
+
+
+
 //button pins
 const int BUTTON1=7;
 const int BUTTON2=8;
@@ -32,6 +42,9 @@ int buttonState1=0;
 int buttonState2=0;
 int buttonState3=0;
 //function declaration
+
+
+
 //moving functions
 void idle();//keeps the motors still
 void setup_motor_pins();//setup the pin mode for the pins moving the DC motors
@@ -48,10 +61,14 @@ void setupButtons();
 void setupLineSensors();
 void calibration();
 bool isBlack(int value);
-bool canMoveForward();
+void lineFollow();
+
+
+
+
 void setup() {
   Serial.begin(9600);
-  BT_module.begin(9600);
+  
   setup_motor_pins();
   setupButtons();
   setupLineSensors();
@@ -72,46 +89,20 @@ void setup() {
   moveForward(200,200);
   
 }
-int dir=0;
-int prevVal[SENSOR_COUNT];
-bool allBlack()
-{
-  for (int i=0;i<SENSOR_COUNT;i++)
-    if (!isBlack(sensorValues[i]))
-      return false;
- return true;
-}
-const float KD=5;
-int lastError=0;
-const float KP=0.1;
+
+
 void loop() {
   
   //button_control();
   leds.show();
-  for (int i=0;i<SENSOR_COUNT;i++)
-   prevVal[i]=sensorValues[i];
-  uint16_t pos=lineSensors.readLineBlack(sensorValues);
+  pos=lineSensors.readLineBlack(sensorValues);
   for (int i=0;i<SENSOR_COUNT;i++)
     {
       Serial.print(isBlack(sensorValues[i]));
       Serial.print(" ");
     }
    Serial.println();
-  if (allBlack())
-  {
-    idle();
-  }
-
-  int error=pos-1000;
-  int motorSpeed= KP * error + KD * (error - lastError);
-  lastError=error;
-  int m1Speed=150+motorSpeed;
-  int m2Speed=150-motorSpeed;
-  if (m1Speed<0)
-    m1Speed=0;
-  if (m2Speed<0)
-    m2Speed=0;
-  moveForward(m1Speed,m2Speed);
+  lineFollow1();
 }
 
 
@@ -161,41 +152,7 @@ void setupButtons()
   pinMode(BUTTON2,INPUT);
   pinMode(BUTTON3,INPUT);
 }
-void BT_control()
-{
-  if (BT_module.available())
-  {
-    int input=BT_module.parseInt();
-    if (input!=0)
-      dir=input;
-    Serial.println(input);
-  }
-  if (dir!=0)  
-   {
-    Serial.println(dir);
-   }
-  
-  switch (dir)
-  {
-    case 1:
-    {
-      moveForward(255,255);
-      
-      break;
-    }
-    case 2:
-    {
-      moveBackward(255,255);
-      leds.fill(RED,2,2);
-      break;
-    }
-    default:
-    {
-      idle();
-      break;
-    }
-  }
-}
+
 void button_control()
 {
   buttonState1=digitalRead(BUTTON1);
@@ -249,4 +206,101 @@ void calibration()
 bool isBlack(int value)
 {
   return value>700;
+}
+void lineFollow()
+{
+  error=pos-2000;
+  int motorSpeed=KP*error+KD*(error-lastError);
+  lastError=error;
+  int leftSpeed=MINIMUM_SPEED+motorSpeed;
+  int rightSpeed=MINIMUM_SPEED-motorSpeed;
+  if (leftSpeed>MAXIMUM_SPEED)
+    leftSpeed=MAXIMUM_SPEED;
+  if (rightSpeed>MAXIMUM_SPEED)
+    rightSpeed=MAXIMUM_SPEED;
+  if (leftSpeed<0)
+    leftSpeed=0;
+  if (rightSpeed<0)
+    rightSpeed=0;
+  moveForward(leftSpeed,rightSpeed);  
+  moveForward(leftSpeed,rightSpeed);
+}
+
+bool lineAhead()
+{
+  if (!isBlack(sensorValues[3]) || !isBlack(sensorValues[4]))
+    return false;
+
+  for (int i=0;i<SENSOR_COUNT;i++)
+  {
+    if (i==3 || i==4)
+      continue;
+    if (isBlack(sensorValues[i]))
+      return false;
+  }
+  return true;
+}
+bool lineRight()
+{
+  for (int i=SENSOR_COUNT/2;i<SENSOR_COUNT;i++)
+  {
+    if (isBlack(sensorValues[i]))
+      return false;
+  }
+  return true;
+}
+bool lineLeft()
+{
+  for (int i=0;i<SENSOR_COUNT/2;i++)
+  {
+    if (isBlack(sensorValues[i]))
+      return false;
+  }
+  return true;
+}
+bool allBlack()
+{
+  for (int i=0;i<SENSOR_COUNT;i++)
+    if (!isBlack(sensorValues[i]))
+        return false;
+  return true;  
+}
+bool allWhite()
+{
+  for (int i=0;i<SENSOR_COUNT;i++)
+    if (isBlack(sensorValues[i]))
+        return false;
+  return true;
+}
+void lineFollow1()
+{
+  if (allBlack())
+  {
+    idle();
+    moveForward(190,190);
+    delay(500);
+    idle();
+    
+  }
+  else if (allWhite())
+    {
+      idle();
+      Serial.println("Finished Track");
+    }
+  else if (lineAhead())
+  {
+    moveForward(200,200);
+  }
+  else  if (lineRight())
+  {
+    idle();
+    moveForward(200,0);
+  }
+ else if (lineLeft())
+  {
+    idle();
+    moveForward(0,200);
+  }
+  else
+  idle();
 }
