@@ -127,12 +127,12 @@ int lookLeft(){
 int lookAround(){
 
     left = lookLeft();
-    delay(1000);
+    delay(500);
     resetSwivel();
-    delay(1000);
+    delay(500);
     right = lookRight();
     resetSwivel();
-    delay(1000);
+    delay(500);
 
     return left,right;
 }
