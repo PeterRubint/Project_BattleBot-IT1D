@@ -72,7 +72,7 @@ void loop(){
             }
             else if (evaluate() == "s")
             {
-                stop();
+                goBack();
             }
         }
     }
@@ -142,17 +142,21 @@ String evaluate(){
     if(front > 12){
         return "f";
     }
-    else if (right > 17)
+    else if (right > front)
     {
         return "r";
     }
-    else if (left > 17)
+    else if (left > front)
     {
         return "l";
     }
-    else if (right > 17 && left > 17)
+    else if (right > front && left > front)
     {
         return "r";
+    }
+    else if(right <= front && left <= front && front <= 12)
+    {
+        return "s";
     }
     else
     {
@@ -212,6 +216,13 @@ void turnRight(){
     stop();
 }
 
+void goBack(){
+    stop();
+    analogWrite(motorRightBackwards,193);
+    analogWrite(motorLeftBackwards,200);
+    delay(500);
+    stop();
+}
 void measureWheelSpeed(){
     int sensorLeftRead = analogRead(sensorLeft)/4;
     int sensorRightRead = analogRead(sensorRight)/4;
