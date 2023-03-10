@@ -102,7 +102,7 @@ void loop() {
       Serial.print(" ");
     }
    Serial.println();
-  lineFollow1();
+   lineFollow1();
 }
 
 
@@ -207,25 +207,6 @@ bool isBlack(int value)
 {
   return value>700;
 }
-void lineFollow()
-{
-  error=pos-2000;
-  int motorSpeed=KP*error+KD*(error-lastError);
-  lastError=error;
-  int leftSpeed=MINIMUM_SPEED+motorSpeed;
-  int rightSpeed=MINIMUM_SPEED-motorSpeed;
-  if (leftSpeed>MAXIMUM_SPEED)
-    leftSpeed=MAXIMUM_SPEED;
-  if (rightSpeed>MAXIMUM_SPEED)
-    rightSpeed=MAXIMUM_SPEED;
-  if (leftSpeed<0)
-    leftSpeed=0;
-  if (rightSpeed<0)
-    rightSpeed=0;
-  moveForward(leftSpeed,rightSpeed);  
-  moveForward(leftSpeed,rightSpeed);
-}
-
 bool lineAhead()
 {
   if (!isBlack(sensorValues[3]) || !isBlack(sensorValues[4]))
@@ -242,7 +223,7 @@ bool lineAhead()
 }
 bool lineRight()
 {
-  for (int i=SENSOR_COUNT/2;i<SENSOR_COUNT;i++)
+  for (int i=SENSOR_COUNT/2+1;i<SENSOR_COUNT;i++)
   {
     if (isBlack(sensorValues[i]))
       return false;
@@ -251,12 +232,27 @@ bool lineRight()
 }
 bool lineLeft()
 {
-  for (int i=0;i<SENSOR_COUNT/2;i++)
+  for (int i=0;i<SENSOR_COUNT/2-1;i++)
   {
     if (isBlack(sensorValues[i]))
       return false;
   }
   return true;
+}
+bool mostlyBlack()
+{
+  int k=0;
+  for (int i=0;i<SENSOR_COUNT/2-1;i++)
+    if (isBlack(sensorValues[i]))
+      k=1;
+  for (int i=SENSOR_COUNT/2+1;i<SENSOR_COUNT;i++)
+    if (isBlack(sensorValues[i]))
+      k=2;
+  if (k==2)
+    return true;
+ return false;
+
+  
 }
 bool allBlack()
 {
@@ -274,11 +270,11 @@ bool allWhite()
 }
 void lineFollow1()
 {
-  if (allBlack())
+  if (allBlack() )
   {
     idle();
-    moveForward(190,190);
-    delay(500);
+    moveForward(200,200);
+    delay(200);
     idle();
     
   }
@@ -301,6 +297,13 @@ void lineFollow1()
     idle();
     moveForward(0,200);
   }
+ else if (mostlyBlack())
+ {
+  idle();
+  moveForward(200,200);
+  delay(200);
+  idle();
+ }
   else
   idle();
 }
