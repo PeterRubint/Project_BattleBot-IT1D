@@ -1,8 +1,6 @@
 //-----------------------------------------------------------------------------------LIBRARIES----------------------------------------------------------------------------------------------
 #include <Adafruit_NeoPixel.h>
 #include <QTRSensors.h>
-
-
 //-----------------------------------------------------------------------------------VARIABLES AND CONSTANTS--------------------------------------------------------------------------------
 //NEOPIXEL VARIABLES
 const int PIXEL_PIN=4;
@@ -40,6 +38,13 @@ int buttonState1=0;
 int buttonState2=0;
 int buttonState3=0;
 
+//GRIPPER
+const int GRIPPER_PIN=10;
+const int GRIPPER_OPEN_PULSE=1600;
+const int GRIPPER_CLOSE_PULSE=971;
+const int GRIPPER_PULSE_REPEAT=10;
+
+
 //DISTANCE SENSOR VARIABLES
 //TO DO
 
@@ -76,16 +81,24 @@ void lineFollow(); //contains the line follower algorithm
 void setupDistanceSensor();
 bool isObjectAhead(); //returns true if there is an object ahead
 void avoidObject(); // avoids the object ahead
+
+//GRIPPER
+void gripperServo(int pulse);
+void openGripper();
+void closeGripper();
 //---------------------------------------------------------------------------------FUNCTION DECLARATIONS------------------------------------------------------------------------------------
 // SETUP AND LOOP FUNTIONS
 void setup() {
+  leds.begin();
   Serial.begin(9600);
   setup_motor_pins();
   setupButtons();
   setupLineSensors();
-  calibration();
-  leds.begin();
-  Serial.println("Calibration done");
+  //calibration();
+  //setups the gripper
+  openGripper();
+  delay (2000);
+  closeGripper();
 }
 
 void loop() {
@@ -99,7 +112,7 @@ void loop() {
       Serial.print(" ");
     }
    Serial.println();
-   lineFollow();
+   //lineFollow();
 }
 
 //MOTOR FUNCTIONS
@@ -323,4 +336,23 @@ void lineFollow()
  }
   else
   idle();
+}
+
+void gripperServo(int pulse)
+{
+    for(int i = 0; i < GRIPPER_PULSE_REPEAT;i++)
+    {
+        digitalWrite(GRIPPER_PIN,HIGH);
+        delayMicroseconds(pulse);
+        digitalWrite(GRIPPER_PIN,LOW);
+        delay(20);
+    }
+}
+void openGripper()
+{
+    gripperServo(GRIPPER_OPEN_PULSE);
+}
+void closeGripper()
+{
+  gripperServo(GRIPPER_CLOSE_PULSE);
 }
