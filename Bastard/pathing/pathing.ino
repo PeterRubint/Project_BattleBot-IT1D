@@ -117,7 +117,7 @@ void stop(){
 
 void turnLeft(){
     stop();
-    analogWrite(motorLeftBackwards,180);
+    analogWrite(motorLeftBackwards,170);
     analogWrite(motorRightForward,200);
     delay(500);
     stop();
@@ -125,7 +125,7 @@ void turnLeft(){
 
 void turnRight(){
     stop();
-    analogWrite(motorRightBackwards,180);
+    analogWrite(motorRightBackwards, 170);
     analogWrite(motorLeftForward,200);
     delay(500);
     stop();
