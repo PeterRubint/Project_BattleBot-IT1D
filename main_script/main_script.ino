@@ -66,8 +66,7 @@ void button_control();
 void setupLineSensors();
 void calibration();
 bool isBlack(int value);
-void lineFollow();
-
+void showSensorValues();
 //LINE FOLLOWER FUNCTIONS
 bool isBlack(int value); //checks if a sensor value represents black or white
 bool lineAhead(); // checks if the line is situated straight ahead of the robot
@@ -76,7 +75,7 @@ bool lineLeft(); // checks if the line begins to curve
 bool mostlyBlack(); // checks if there is a crossroad ahead
 bool allBlack(); //checks if there is a perpendicular line on the track simbolizing a crossroads or a beginning line 
 void lineFollow(); //contains the line follower algorithm
-
+void beginRace();
 //DISTANCE SENSOR FUNCTIONS
 void setupDistanceSensor();
 bool isObjectAhead(); //returns true if there is an object ahead
@@ -89,30 +88,43 @@ void closeGripper();
 //---------------------------------------------------------------------------------FUNCTION DECLARATIONS------------------------------------------------------------------------------------
 // SETUP AND LOOP FUNTIONS
 void setup() {
+  openGripper();
   leds.begin();
   Serial.begin(9600);
   setup_motor_pins();
   setupButtons();
   setupLineSensors();
-  //calibration();
+  calibration();
   //setups the gripper
-  openGripper();
-  delay (2000);
+  
+  Serial.println("Beginning Race");
+  while(!allBlack())
+  {
+    pos=lineSensors.readLineBlack(sensorValues);
+    showSensorValues();
+    beginRace();
+  }
+  Serial.println("Picking up object");
+  idle();
+  delay(1000);
   closeGripper();
+  Serial.println("Picked up the object");
+ moveForward(200,200);
+ delay(200);
+ idle();
+  moveForward(0,200);
+  delay(700);
+  idle();
+  Serial.println("Beginning race");
 }
 
 void loop() {
   
-  //button_control();
+ // button_control();
   leds.show();
   pos=lineSensors.readLineBlack(sensorValues);
-  for (int i=0;i<SENSOR_COUNT;i++)
-    {
-      Serial.print(isBlack(sensorValues[i]));
-      Serial.print(" ");
-    }
-   Serial.println();
-   //lineFollow();
+  showSensorValues();
+  lineFollow();
 }
 
 //MOTOR FUNCTIONS
@@ -192,7 +204,7 @@ void calibration()
   //begin the calibration process
    for(int i = 0; i < 2;i++)
    {
-        moveForward(200,200);
+        moveForward(180,180);
         for(uint8_t i = 0; i < 25 ; i++)
         {
             lineSensors.calibrate();
@@ -213,6 +225,8 @@ void calibration()
     }
     //end of the calibration
     idle();
+    moveForward(180,180);
+    delay(1700);
     //note the maximum and minimum values recorded during the calibration process
     for (int i=0;i<SENSOR_COUNT;i++)
     {
@@ -225,8 +239,17 @@ void calibration()
       Serial.print(lineSensors.calibrationOn.maximum[i]);
       Serial.print(" ");
     }
+    idle();
 }
-
+void showSensorValues()
+{
+  for (int i=0;i<SENSOR_COUNT;i++)
+    {
+      Serial.print(isBlack(sensorValues[i]));
+      Serial.print(" ");
+    }
+   Serial.println();
+}
 //LINE FOLLOWER LOGIC FUNCTIONS
 bool isBlack(int value)
 {
@@ -306,7 +329,6 @@ void lineFollow()
     moveForward(200,200);
     delay(200);
     idle();
-    
   }
   else if (allWhite())
     {
@@ -337,6 +359,31 @@ void lineFollow()
   else
   idle();
 }
+
+void beginRace()
+{
+  if (lineAhead())
+  {
+    moveForward(200,200);
+  }
+  else  if (lineRight())
+  {
+    idle();
+    moveForward(200,0);
+  }
+ else if (lineLeft())
+  {
+    idle();
+    moveForward(0,200);
+  }
+ else if (allWhite())
+ {
+  idle();
+ }
+}
+
+
+
 
 void gripperServo(int pulse)
 {
