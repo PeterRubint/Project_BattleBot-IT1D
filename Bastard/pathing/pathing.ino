@@ -25,6 +25,8 @@ Adafruit_NeoPixel neoPixel(pixelCount, pixelPin, NEO_GRB + NEO_KHZ800);
 int leftRotationCount =  0;
 int rightRotationCount = 0;
 
+bool done = false;
+
 
 void setup(){
     Serial.begin(9600);
@@ -48,21 +50,8 @@ void setup(){
 }
 
 void loop(){
- 
-   
-   if(leftRotationCount > 50){
-        //stop();
-        analogWrite(motorLeftForward,0);
-        analogWrite(motorRightForward,0);
-        delay(5000);
-        leftRotationCount = 0;
-        rightRotationCount = 0;
-   }
-   else{
-        forward();
-   }
-    /*
-    
+
+        
     front = measureFront();
     right = measureRight();
     forward();
@@ -89,22 +78,31 @@ void loop(){
             turnLeft();
         }
     }
-*/
     
 
 
 }
 
+void oneRotationForward(){
+    while(rightRotationCount < 40){
+        forward();
+    }
+    
+    rightRotationCount = 0;
+    leftRotationCount = 0;
+    stop();
+}
+
 void countLeftSensor(){
     leftRotationCount++;
-    Serial.print("LeftRotation:");
-    Serial.println(leftRotationCount);
+    // Serial.print("LeftRotation:");
+    // Serial.println(leftRotationCount);
 }
 
 void countRightSensor(){
     rightRotationCount++;
-    Serial.print("RightSensor:");
-    Serial.println(rightRotationCount);
+    // Serial.print("RightSensor:");
+    // Serial.println(rightRotationCount);
 }
 
 long measureFront(){
@@ -152,17 +150,21 @@ void stop(){
 
 void turnLeft(){
     stop();
-    analogWrite(motorLeftBackwards,170);
+    analogWrite(motorLeftBackwards,190);
     analogWrite(motorRightForward,200);
     delay(500);
     stop();
 }
 
 void turnRight(){
-    stop();
-    analogWrite(motorRightBackwards, 170);
-    analogWrite(motorLeftForward,200);
-    delay(500);
+    while(rightRotationCount < 8){
+        analogWrite(motorRightBackwards, 190);
+        analogWrite(motorLeftForward,200);
+        delay(500);
+    }
+    
+    rightRotationCount = 0;
+    leftRotationCount = 0;
     stop();
 }
 
