@@ -1,6 +1,6 @@
 #define motorLeftForward 6
 #define motorLeftBackwards 5
-#define motorRightForward 3
+#define motorRightForward 10
 #define motorRightBackwards 11
 #define frontTrigger 8
 #define frontEcho 7
@@ -19,6 +19,12 @@ Adafruit_NeoPixel neoPixel(pixelCount, pixelPin, NEO_GRB + NEO_KHZ800);
 
 #define detectionLimit 12
 
+//rotation sensor
+#define leftWheelSensor 3
+#define rightWheelSensor 2
+int leftRotationCount =  0;
+int rightRotationCount = 0;
+
 
 void setup(){
     Serial.begin(9600);
@@ -33,12 +39,29 @@ void setup(){
     pinMode(rightEcho,INPUT);
 
     neoPixel.begin();
-    
+    //sensor
+    pinMode(leftWheelSensor,INPUT);
+    pinMode(rightWheelSensor,INPUT);
+    attachInterrupt(digitalPinToInterrupt(3),countLeftSensor,CHANGE);
+    attachInterrupt(digitalPinToInterrupt(2),countRightSensor,CHANGE);
 
 }
 
 void loop(){
-    
+ 
+   
+   if(leftRotationCount > 50){
+        //stop();
+        analogWrite(motorLeftForward,0);
+        analogWrite(motorRightForward,0);
+        delay(5000);
+        leftRotationCount = 0;
+        rightRotationCount = 0;
+   }
+   else{
+        forward();
+   }
+    /*
     
     front = measureFront();
     right = measureRight();
@@ -66,10 +89,22 @@ void loop(){
             turnLeft();
         }
     }
-
+*/
     
 
 
+}
+
+void countLeftSensor(){
+    leftRotationCount++;
+    Serial.print("LeftRotation:");
+    Serial.println(leftRotationCount);
+}
+
+void countRightSensor(){
+    rightRotationCount++;
+    Serial.print("RightSensor:");
+    Serial.println(rightRotationCount);
 }
 
 long measureFront(){
@@ -105,7 +140,7 @@ long measureRight(){
 
 void forward(){
     analogWrite(motorLeftForward,200);
-    analogWrite(motorRightForward,190);
+    analogWrite(motorRightForward,193);
 }
 
 void stop(){
