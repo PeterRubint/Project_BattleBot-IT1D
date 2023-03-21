@@ -17,7 +17,7 @@ long front, right;
 Adafruit_NeoPixel neoPixel(pixelCount, pixelPin, NEO_GRB + NEO_KHZ800);
 #endif
 
-#define detectionLimit 12
+#define detectionLimit 15
 
 //rotation sensor
 #define leftWheelSensor 3
@@ -51,33 +51,33 @@ void setup(){
 
 void loop(){
 
-        
-    front = measureFront();
-    right = measureRight();
-    forward();
-    while(right <= detectionLimit){
-        forward();
-        lightGreen();
-        front = measureFront();
-        right = measureRight();
+    turnRight();
+    delay(1000);
 
-        if(right > detectionLimit){
-            delay(100);
-            turnRight();
-        }
-        else if (front <= detectionLimit && right > detectionLimit){
-            delay(100);
-            turnRight();
-        }
-        else if(front <= detectionLimit && right <= detectionLimit){
-            delay(100);
-            turnLeft();
-        }
-        else if(front <= detectionLimit && right <= detectionLimit){
-            delay(100);
-            turnLeft();
-        }
-    }
+    // front = measureFront();
+    // right = measureRight();
+    // forward();
+    // while(right <= detectionLimit){
+    //     forward();
+    //     lightGreen();
+    //     front = measureFront();
+    //     right = measureRight();
+
+    //     if(right > detectionLimit){
+    //         delay(100);
+    //         turnRight();
+    //         Serial.println("RIGHT");
+    //     }
+    //     else if(front <= detectionLimit){
+    //         if(right > detectionLimit){
+    //             turnRight();
+    //             Serial.println("RIGHT");
+    //         }
+    //         else if(right <= detectionLimit){
+    //             turnLeft();
+    //         }
+    //     }
+    // }
     
 
 
@@ -87,7 +87,6 @@ void oneRotationForward(){
     while(rightRotationCount < 40){
         forward();
     }
-    
     rightRotationCount = 0;
     leftRotationCount = 0;
     stop();
@@ -157,15 +156,13 @@ void turnLeft(){
 }
 
 void turnRight(){
-    while(rightRotationCount < 8){
-        analogWrite(motorRightBackwards, 190);
+    stop();
+    while(rightRotationCount < 1 && leftRotationCount < 1){
         analogWrite(motorLeftForward,200);
-        delay(500);
+        analogWrite(motorRightBackwards,190);
     }
-    
     rightRotationCount = 0;
     leftRotationCount = 0;
-    stop();
 }
 
 void goBack(){
