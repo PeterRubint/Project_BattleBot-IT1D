@@ -19,6 +19,12 @@
 #define motorRightForward 10
 #define motorRightBackward 11
 
+//rotation sensor
+#define leftWheelSensor 3
+#define rightWheelSensor 2
+int leftRotationCount =  0;
+int rightRotationCount = 0;
+
 // sensors
 QTRSensors qtr;
 
@@ -36,11 +42,15 @@ void setup(){
         pinMode(motorRightForward,INPUT);
         pinMode(motorRightBackward,INPUT);
         pinMode(gripper,INPUT);
-    //sensors
+    //line sensors
     qtr.setTypeAnalog();
     qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
-    //start
-    //setCalibration();
+    //sensor
+    pinMode(leftWheelSensor,INPUT);
+    pinMode(rightWheelSensor,INPUT);
+    attachInterrupt(digitalPinToInterrupt(3),countLeftSensor,CHANGE);
+    attachInterrupt(digitalPinToInterrupt(2),countRightSensor,CHANGE);
+    start();
 }
 
 void loop(){
@@ -54,21 +64,29 @@ void loop(){
     Serial.println(" cm");
 
     //Line following logic
-    if( sensorLala[3] > sensorLimit  || sensorLala[4] > sensorLimit ){ 
+    if(sensorLala[0] > 900 && sensorLala[1] > 900 && sensorLala[2] > 900 && sensorLala[3] > 900 && sensorLala[4] > 900 && sensorLala[5] > 900 && sensorLala[6] > 900 && sensorLala[7] > 900){
+        analogWrite(motorLeftForward,0);
+        analogWrite(motorRightForward,0);
+        openGrip();
+        backward(20);
+    }
+    else if( sensorLala[3] > sensorLimit  || sensorLala[4] > sensorLimit ){ 
         if(sensorLala[0] > sensorLimit &&  sensorLala[1] > sensorLimit  && sensorLala[2] > sensorLimit){
            doRight();
         }
-        else if(sensorLala[0] > 900 && sensorLala[1] > 900 && sensorLala[2] > 900 && sensorLala[3] > 900 && sensorLala[4] > 900 && sensorLala[5] > 900 && sensorLala[6] > 900 && sensorLala[7] > 900){
-        openGrip();
-        backward();
-        delay(500);
-        stop();
-        }
+        /*else if(sensorLala[0] > 900 && sensorLala[1] > 900 && sensorLala[2] > 900 && sensorLala[3] > 900 && sensorLala[4] > 900 && sensorLala[5] > 900 && sensorLala[6] > 900 && sensorLala[7] > 900){
+            openGrip();
+            backward();
+            delay(500);
+            stop();
+        }*/
         else if((sensorLala[2]>sensorLimit || sensorLala[3]>sensorLimit || sensorLala[4]>sensorLimit) && (sensorLala[1]< sensorLimit || sensorLala[2] < sensorLimit || sensorLala[3]<sensorLimit)){
-            forward();
+            analogWrite(motorLeftForward,200);
+            analogWrite(motorRightForward,193);
         }
         else { 
-            forward();
+            analogWrite(motorLeftForward,200);
+            analogWrite(motorRightForward,193);
         }
     }
     else if(sensorLala[0] > sensorLimit || sensorLala[1] > sensorLimit || sensorLala[2] > sensorLimit){
@@ -77,15 +95,23 @@ void loop(){
     else if(sensorLala[5] > sensorLimit || sensorLala[6] > sensorLimit || sensorLala[7] > sensorLimit){
         doLeft();
     }
-    else if(sensorLala > 900){
+    /*else if(sensorLala > 900){
         openGrip();
         backward();
         delay(500);
         stop();
-    }
+    }*/
     else if(sensorLala < sensorLimit){
       //Maze part....
     }
+}
+
+void countLeftSensor(){
+    leftRotationCount++;
+}
+
+void countRightSensor(){
+    rightRotationCount++;
 }
 
 void setCalibration(){
@@ -104,9 +130,23 @@ void setCalibration(){
     turnLeft();
 }
 
-void forward(){
-    analogWrite(motorLeftForward,237);
-    analogWrite(motorRightForward,230);
+void start(){
+    openGrip();
+    forward(34);
+    closeGrip();
+    turnLeft();
+    forward(5);
+}
+
+
+void forward(int distance){
+    while(rightRotationCount < distance*2){ // 40 = 20cm 
+        analogWrite(motorLeftForward,200);
+        analogWrite(motorRightForward,193);
+    }
+    rightRotationCount = 0;
+    leftRotationCount = 0;
+    stop();
 }
 
 void stop(){
@@ -116,24 +156,23 @@ void stop(){
     analogWrite(motorRightBackward,0);
 }
 
-void backward(){
-    analogWrite(motorLeftBackward,237);
-    analogWrite(motorRightBackward,230);
-}
-
-void turnRight(){
-    stop();
-    analogWrite(motorRightBackward,200);
-    analogWrite(motorLeftForward,207);
-    delay(500);
+void backward(int distance){
+    while(rightRotationCount < distance*2){ // 1cm = 2
+        analogWrite(motorLeftBackward,200);
+        analogWrite(motorRightBackward,193);
+    }
+    rightRotationCount = 0;
+    leftRotationCount = 0;
     stop();
 }
 
 void turnLeft(){
-    stop();
-    analogWrite(motorRightForward,200);
-    analogWrite(motorLeftBackward,207);
-    delay(300);
+     while(rightRotationCount < 49){
+        analogWrite(motorRightBackward, 190);
+        analogWrite(motorLeftForward,200);
+    }
+    rightRotationCount = 0;
+    leftRotationCount = 0;
     stop();
 }
 

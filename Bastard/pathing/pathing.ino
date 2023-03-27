@@ -1,12 +1,13 @@
 #define motorLeftForward 6
-#define motorLeftBackwards 5
+#define motorLeftBackward 5
 #define motorRightForward 10
-#define motorRightBackwards 11
+#define motorRightBackward 11
 #define frontTrigger 8
 #define frontEcho 7
 #define rightTrigger 12
 #define rightEcho 13
 #include <Adafruit_NeoPixel.h>
+
 #ifdef __AVR__
 #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 long frontDistanceInCM, rightDistanceInCM;
@@ -31,9 +32,9 @@ bool done = false;
 void setup(){
     Serial.begin(9600);
     pinMode(motorLeftForward,INPUT); 
-    pinMode(motorLeftBackwards,INPUT);
+    pinMode(motorLeftBackward,INPUT);
     pinMode(motorRightForward,INPUT);
-    pinMode(motorRightBackwards,INPUT);
+    pinMode(motorRightBackward,INPUT);
     //ultrasonic
     pinMode(frontTrigger,OUTPUT);
     pinMode(frontEcho,INPUT);
@@ -50,10 +51,6 @@ void setup(){
 }
 
 void loop(){
-
-    turnRight();
-    delay(1000);
-
     // front = measureFront();
     // right = measureRight();
     // forward();
@@ -78,9 +75,49 @@ void loop(){
     //         }
     //     }
     // }
+    long right = measureRight();
+    long front = measureFront();
+
+    if(right > 30){
+        turnRight();
+        Serial.print("Right");
+    }
+    else if(front < 20){
+        turnLeft();
+        Serial.println("Left: " + String(front) + ";");
+    }
+    /*else if(front < 20 && right < 20){
+        stop();
+        while(rightRotationCount < 8){
+            analogWrite(motorLeftForward,255);
+            analogWrite(motorRightForward,80);
+        }
+        rightRotationCount = 0;
+        leftRotationCount = 0;
+        stop();
+    }*/
     
+    else{
+        paulWay();
+        Serial.print("Paul");
+    }
 
+}
 
+void paulWay(){
+    // used to keep the robot straight in the maze
+    if(rightDistanceInCM > 6.5){
+        analogWrite(motorRightForward,200);
+        analogWrite(motorLeftForward,255);
+    }
+    else if(rightDistanceInCM < 4.5){
+        analogWrite(motorLeftForward,255);
+        analogWrite(motorRightForward,255);
+    }
+    else{
+        analogWrite(motorLeftForward,255);
+        analogWrite(motorRightForward,240);
+    }
 }
 
 void oneRotationForward(){
@@ -107,29 +144,32 @@ void countRightSensor(){
 long measureFront(){
     //Front sensor
     digitalWrite(frontTrigger,LOW);
-    delayMicroseconds(5);
+    delayMicroseconds(10);
     digitalWrite(frontTrigger,HIGH);
     digitalWrite(frontTrigger,LOW);
 
     frontDistanceInCM = (pulseIn(frontEcho,HIGH)/2) / 29.1;
+    /*
     Serial.println("Front distance: ");
     Serial.print(frontDistanceInCM);
     Serial.println(" ");
-    
+    */
     return frontDistanceInCM;
 }
 
 long measureRight(){
     //Right sensor
     digitalWrite(rightTrigger,LOW);
-    delayMicroseconds(5);
+    delayMicroseconds(10);
     digitalWrite(rightTrigger,HIGH);
     digitalWrite(rightTrigger,LOW);
 
     rightDistanceInCM = (pulseIn(rightEcho,HIGH)/2) / 29.1;
+    /*
     Serial.println("Right distance: ");
     Serial.print(rightDistanceInCM);
     Serial.println(" ");
+    */
 
     return  rightDistanceInCM;
 
@@ -143,32 +183,37 @@ void forward(){
 void stop(){
     analogWrite(motorLeftForward,0);
     analogWrite(motorRightForward,0);
-    analogWrite(motorLeftBackwards,0);
-    analogWrite(motorRightBackwards,0);
+    analogWrite(motorLeftBackward,0);
+    analogWrite(motorRightBackward,0);
 }
 
 void turnLeft(){
     stop();
-    analogWrite(motorLeftBackwards,190);
-    analogWrite(motorRightForward,200);
-    delay(500);
+    while(rightRotationCount < 8){
+        analogWrite(motorRightForward,200);
+        analogWrite(motorLeftBackward,190);
+        // Serial.print(rightRotationCount);
+    }
+    rightRotationCount = 0;
+    leftRotationCount = 0;
     stop();
 }
 
 void turnRight(){
     stop();
-    while(rightRotationCount < 1 && leftRotationCount < 1){
-        analogWrite(motorLeftForward,200);
-        analogWrite(motorRightBackwards,190);
+    while(rightRotationCount < 8){
+        analogWrite(motorLeftForward,255);
+        analogWrite(motorRightForward,80);
     }
     rightRotationCount = 0;
     leftRotationCount = 0;
+    stop();
 }
 
 void goBack(){
     stop();
-    analogWrite(motorRightBackwards, 193);
-    analogWrite(motorLeftBackwards, 200);
+    analogWrite(motorRightBackward, 193);
+    analogWrite(motorLeftBackward, 200);
     delay(500);
 }
 
