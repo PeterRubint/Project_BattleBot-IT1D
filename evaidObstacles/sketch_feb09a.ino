@@ -106,7 +106,7 @@ void movePastObstcle(){
  
    if(isTurningLeft){
     moveLeft(255,0);
-    delay(800);
+    delay(700);
     isTurningLeft=false;
     idle();
     delay(900);
@@ -114,7 +114,7 @@ void movePastObstcle(){
    }
     if(itMoved){
     moveForward(255,255);
-    delay(900);
+    delay(700);
     idle();
     itMoved=false;
     delay(500);
@@ -122,7 +122,7 @@ void movePastObstcle(){
     }
    if(isTurningRight){
     moveRight(0,255);
-    delay(800);
+    delay(700);
     isTurningRight=false;
     idle();
     itMoved=true;
@@ -130,7 +130,7 @@ void movePastObstcle(){
     if(itMoved){
     idle();
     moveForward(255,255);
-    delay(2500);
+    delay(1700);
     idle();
     itMoved=false;
     delay(500);
@@ -138,7 +138,7 @@ void movePastObstcle(){
     }
     if(isTurningRight){
     moveRight(0,255);
-    delay(800);
+    delay(700);
     isTurningRight=false;
     idle();
     itMoved=true;
@@ -146,7 +146,7 @@ void movePastObstcle(){
     if(itMoved){
     idle();
     moveForward(255,255);
-    delay(900);
+    delay(800);
     idle();
     itMoved=false;
     delay(500);
@@ -154,7 +154,7 @@ void movePastObstcle(){
     }
   if(isTurningLeftAgain){
     moveLeft(255,0);
-    delay(850);
+    delay(700);
     isTurningLeftAgain=false;
     idle();
     }
