@@ -2,6 +2,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <QTRSensors.h>
 //-----------------------------------------------------------------------------------VARIABLES AND CONSTANTS--------------------------------------------------------------------------------
+bool isRaceFinished;
 //NEOPIXEL VARIABLES
 const int PIXEL_PIN=4;
 const int PIXEL_NUMBER=4;
@@ -11,7 +12,7 @@ Adafruit_NeoPixel leds(PIXEL_NUMBER,PIXEL_PIN,NEO_RGB +NEO_KHZ800);
 const uint32_t RED=leds.Color(255,0,0);
 const uint32_t YELLOW=leds.Color(234,255,0);
 const uint32_t BLUE=leds.Color(0,0,255);
-
+const uint32_t ORANGE=leds.Color(255,165,0);
 //MOTOR PINS
 const int  MOTOR_A1=11;
 const int MOTOR_A2=5;
@@ -46,9 +47,10 @@ const int GRIPPER_PULSE_REPEAT=10;
 
 
 //DISTANCE SENSOR VARIABLES
-//TO DO
-
-
+const int ECHO_PIN=7;
+const int TRIG_PIN=8;
+int distance;
+long duration;
 
 
 //---------------------------------------------------------------------------------------FUNCTION HEADERS-----------------------------------------------------------------------------------
@@ -77,10 +79,9 @@ bool allBlack(); //checks if there is a perpendicular line on the track simboliz
 void lineFollow(); //contains the line follower algorithm
 void beginRace();
 //DISTANCE SENSOR FUNCTIONS
-void setupDistanceSensor();
-bool isObjectAhead(); //returns true if there is an object ahead
-void avoidObject(); // avoids the object ahead
-
+void readDistance();
+void movePastObstcle();
+bool isObjectAhead();
 //GRIPPER
 void gripperServo(int pulse);
 void openGripper();
@@ -88,14 +89,21 @@ void closeGripper();
 //---------------------------------------------------------------------------------FUNCTION DECLARATIONS------------------------------------------------------------------------------------
 // SETUP AND LOOP FUNTIONS
 void setup() {
+  isRaceFinished=false;
   openGripper();
   leds.begin();
   Serial.begin(9600);
+  pinMode(TRIG_PIN, OUTPUT); // Sets the trigPin as an Output
+  pinMode(ECHO_PIN, INPUT); // Sets the echoPin as an Input
   setup_motor_pins();
-  setupButtons();
+  //setupButtons();
   setupLineSensors();
   calibration();
-  //setups the gripper
+  idle();
+  moveForward();
+  delay(700);
+  idle();
+  
   
   Serial.println("Beginning Race");
   while(!allBlack())
@@ -109,22 +117,52 @@ void setup() {
   delay(1000);
   closeGripper();
   Serial.println("Picked up the object");
- moveForward(200,200);
- delay(200);
- idle();
-  moveForward(0,200);
-  delay(700);
+  moveForward(200,200);
+  delay(300);
+  idle();
+  moveForward(0,250);
+  while (allBlack() || mostlyBlack())
+    pos=lineSensors.readLineBlack(sensorValues);
   idle();
   Serial.println("Beginning race");
+  
+
 }
 
 void loop() {
-  
- // button_control();
-  leds.show();
-  pos=lineSensors.readLineBlack(sensorValues);
-  showSensorValues();
-  lineFollow();
+  if (isRaceFinished==false)
+  {
+   // button_control();
+    leds.show();
+    pos=lineSensors.readLineBlack(sensorValues);
+    //  showSensorValues();
+    readDistance();
+    if (isObjectAhead())
+    {
+      Serial.println("avoid object");
+      avoidObject1();  
+      Serial.println("avoided object");
+    }
+    else
+    {
+      lineFollow();
+    }
+  }
+  else if(isRaceFinished==true)
+  {
+    idle();
+    moveBackward(200,200);
+    delay(1000);
+    idle();
+    moveForward(180,0);
+    leds.clear();
+    leds.fill(RED,0,1);
+    leds.fill(BLUE,2,2);
+    leds.fill(ORANGE,1,1);
+    delay(1000);
+    leds.clear();
+    delay(1000);
+  }
 }
 
 //MOTOR FUNCTIONS
@@ -151,7 +189,12 @@ void setup_motor_pins()
 void moveForward(int powerA=255,int powerB=255)
 {
   leds.clear();
+  if (powerA==powerB)
   leds.fill(BLUE,2,2);
+  else if (powerA>powerB)
+    leds.fill(BLUE,2,1);
+  else
+    leds.fill(BLUE,3,1);
   leds.show(); 
   analogWrite(MOTOR_A2,powerA);
   analogWrite(MOTOR_B1,powerB);
@@ -161,6 +204,12 @@ void moveBackward(int powerA=255,int powerB=255)
 {
   leds.clear();
   leds.fill(RED,0,2);
+  if (powerA==powerB)
+  leds.fill(RED,0,2);
+  else if (powerA>powerB)
+    leds.fill(RED,0,1);
+  else
+    leds.fill(RED,1,1);
   leds.show();
   analogWrite(MOTOR_A1,powerA);
   analogWrite(MOTOR_B2,powerB);
@@ -212,21 +261,29 @@ void calibration()
             Serial.println(i);
         }
         idle();
-        delay(100);
+        
         moveBackward(170,170);
+        delay(1000);
+        idle();
+        moveForward(180,180);
         for(uint8_t i = 0; i < 25 ; i++)
         {
             lineSensors.calibrate();
             Serial.print("Calibration: ");
             Serial.println(i);
         }
-        Serial.println("Calibration done");
-        
+        idle();
+        moveBackward(170,170);
+        delay(1000);
+        idle();
+          
     }
+    Serial.println("Calibration done");
     //end of the calibration
     idle();
-    moveForward(180,180);
-    delay(1700);
+    moveForward(150,150);
+    delay(500);
+    idle();
     //note the maximum and minimum values recorded during the calibration process
     for (int i=0;i<SENSOR_COUNT;i++)
     {
@@ -239,7 +296,6 @@ void calibration()
       Serial.print(lineSensors.calibrationOn.maximum[i]);
       Serial.print(" ");
     }
-    idle();
 }
 void showSensorValues()
 {
@@ -320,40 +376,58 @@ bool allWhite()
         return false;
   return true;
 }
-
+int lastMove=0;//last move before the robot got out of the truck - useful for reentering the track - can have value 1 for right or -1 for left
 void lineFollow()
 {
   if (allBlack() )
   {
     idle();
-    moveForward(200,200);
-    delay(200);
+    moveForward(180,180);
+    delay(500);
     idle();
+    //if the line is still black then this is the end of the race and the object will be dropped
+    pos=lineSensors.readLineBlack(sensorValues);
+    if (allBlack())
+    {
+      openGripper();
+      isRaceFinished=true;
+      
+    }
   }
   else if (allWhite())
     {
       idle();
-      Serial.println("Finished Track");
+      if (lastMove==-1)
+        moveForward(0,200);
+      else
+        moveForward(200,0);
+      while(allWhite())
+        pos=lineSensors.readLineBlack(sensorValues);
+      idle();
+      
     }
   else if (lineAhead())
   {
-    moveForward(200,200);
+    moveForward(240,240);
   }
   else  if (lineRight())
   {
     idle();
-    moveForward(200,0);
+    lastMove=1;
+    moveForward(220,0);
   }
  else if (lineLeft())
   {
     idle();
-    moveForward(0,200);
+    lastMove=-1;
+    moveForward(0,220);
   }
  else if (mostlyBlack())
  {
   idle();
-  moveForward(200,200);
-  delay(200);
+  moveForward(220,220);
+  while (mostlyBlack())
+   pos=lineSensors.readLineBlack(sensorValues);
   idle();
  }
   else
@@ -402,4 +476,109 @@ void openGripper()
 void closeGripper()
 {
   gripperServo(GRIPPER_CLOSE_PULSE);
+}
+bool isObjectAhead()
+{
+  return (distance<=9);
+}
+void readDistance()
+{
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  //Sets trigPin on High state for 10 microSec
+  digitalWrite(TRIG_PIN,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  //Reads echoPin, returns the wave travel time in miceoSec
+  duration=pulseIn(ECHO_PIN,HIGH);
+  //Calculate distance
+  distance=duration*0.034/2;
+  //Prints the distance on monitor
+  Serial.print("Distance:");
+  Serial.println(distance);
+}
+void avoidObject1()
+{
+  int turningTime=420;
+  idle();
+  leds.clear();
+  leds.fill(ORANGE,2,2);
+  leds.show();
+  delay(3000);
+  //get off the track
+  moveForward(200,0);
+  delay(turningTime);
+  idle();
+  moveForward(200,200);
+  delay(1100);
+  idle();
+  moveForward(0,200);
+  delay(2*turningTime);
+  idle();
+  moveForward(200,200);
+  while (allWhite() || mostlyBlack())
+    pos=lineSensors.readLineBlack(sensorValues);
+  idle();
+  
+}
+void avoidObject(){
+  bool itMoved=false;
+  bool isTurningLeft=true;
+  bool isTurningLeftAgain=false;
+  bool isTurningRight=false;
+ 
+   if(isTurningLeft){
+    moveForward(255,0);
+    delay(700);
+    isTurningLeft=false;
+    idle();
+    delay(900);
+    itMoved=true;
+   }
+    if(itMoved){
+    moveForward(255,255);
+    delay(700);
+    idle();
+    itMoved=false;
+    delay(500);
+    isTurningRight=true;
+    }
+   if(isTurningRight){
+    moveForward(0,255);
+    delay(700);
+    isTurningRight=false;
+    idle();
+    itMoved=true;
+   }
+    if(itMoved){
+    idle();
+    moveForward(255,255);
+    delay(1700);
+    idle();
+    itMoved=false;
+    delay(500);
+    isTurningRight=true;
+    }
+    if(isTurningRight){
+    moveForward(0,255);
+    delay(700);
+    isTurningRight=false;
+    idle();
+    itMoved=true;
+   }
+    if(itMoved){
+    idle();
+    moveForward(255,255);
+    delay(800);
+    idle();
+    itMoved=false;
+    delay(500);
+    isTurningLeftAgain=true;
+    }
+  if(isTurningLeftAgain){
+    moveForward(255,0);
+    delay(700);
+    isTurningLeftAgain=false;
+    idle();
+    }
 }
