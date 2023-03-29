@@ -46,6 +46,7 @@ Adafruit_NeoPixel neoPixel(pixelCount, pixelPin, NEO_GRB + NEO_KHZ800);
 #endif
 
 #define detectionLimit 15
+boolean raceStart = false;
 
 //setup
 void setup(){
@@ -73,76 +74,82 @@ void setup(){
 }
 
 void loop(){
-    qtr.read(sensorLala);
-    for (uint8_t i = 0; i < SensorCount; i++){
-        Serial.print(sensorLala[i]);
-        Serial.print('\t');
-    }
-    Serial.println();
-    Serial.print("Distance = ");
-    Serial.println(" cm");
 
-    //Line following logic
-    if(sensorLala[0] > 900 && sensorLala[1] > 900 && sensorLala[2] > 900 && sensorLala[3] > 900 && sensorLala[4] > 900 && sensorLala[5] > 900 && sensorLala[6] > 900 && sensorLala[7] > 900){
-        analogWrite(motorLeftForward,0);
-        analogWrite(motorRightForward,0);
-        openGrip();
-        backward(20);
-    }
-    else if( sensorLala[3] > sensorLimit  || sensorLala[4] > sensorLimit ){ 
-        if(sensorLala[0] > sensorLimit &&  sensorLala[1] > sensorLimit  && sensorLala[2] > sensorLimit){
-           doRight();
+    if(raceStart){
+        qtr.read(sensorLala);
+        for (uint8_t i = 0; i < SensorCount; i++){
+            Serial.print(sensorLala[i]);
+            Serial.print('\t');
         }
-        else if((sensorLala[2]>sensorLimit || sensorLala[3]>sensorLimit || sensorLala[4]>sensorLimit) && (sensorLala[1]< sensorLimit || sensorLala[2] < sensorLimit || sensorLala[3]<sensorLimit)){
-            analogWrite(motorLeftForward,200);
-            analogWrite(motorRightForward,193);
+        Serial.println();
+        Serial.print("Distance = ");
+        Serial.println(" cm");
+
+        //Line following logic
+        if(sensorLala[0] > 900 && sensorLala[1] > 900 && sensorLala[2] > 900 && sensorLala[3] > 900 && sensorLala[4] > 900 && sensorLala[5] > 900 && sensorLala[6] > 900 && sensorLala[7] > 900){
+            analogWrite(motorLeftForward,0);
+            analogWrite(motorRightForward,0);
+            openGrip();
+            backward(20);
         }
-        else { 
-            analogWrite(motorLeftForward,200);
-            analogWrite(motorRightForward,193);
-        }
-    }
-    else if(sensorLala[0] > sensorLimit || sensorLala[1] > sensorLimit || sensorLala[2] > sensorLimit){
-        doRight();
-    }
-    else if(sensorLala[5] > sensorLimit || sensorLala[6] > sensorLimit || sensorLala[7] > sensorLimit){
-        doLeft();
-    }
-    else if(sensorLala > 900){ // Finish maze 
-        openGrip();
-        backward(15);
-        delay(500);
-        stop();
-        exit(0);
-    }
-    else if(sensorLala < sensorLimit){ // Maze logic
-        lightRed();
-        long right = measureRight();
-        long front = measureFront();
-        
-        if(right > 30){
-            delay(10);
-            turnRight();
-            Serial.print("Right");
-            lightRed();
-        }
-        else if(front < 15){
-            delay(10);
-            turnLeft();
-            lightRed();
-            Serial.println("Left: " + String(front) + ";");
-        }
-        else if(front < 15 && right < 15){
-            stop();
-            turnLeft();
-            if(front < 20){
-                turnLeft();
+        else if( sensorLala[3] > sensorLimit  || sensorLala[4] > sensorLimit ){ 
+            if(sensorLala[0] > sensorLimit &&  sensorLala[1] > sensorLimit  && sensorLala[2] > sensorLimit){
+            doRight();
+            }
+            else if((sensorLala[2]>sensorLimit || sensorLala[3]>sensorLimit || sensorLala[4]>sensorLimit) && (sensorLala[1]< sensorLimit || sensorLala[2] < sensorLimit || sensorLala[3]<sensorLimit)){
+                analogWrite(motorLeftForward,200);
+                analogWrite(motorRightForward,193);
+            }
+            else { 
+                analogWrite(motorLeftForward,200);
+                analogWrite(motorRightForward,193);
             }
         }
-        else{
-            paulWay();
-            Serial.print("Paul");
+        else if(sensorLala[0] > sensorLimit || sensorLala[1] > sensorLimit || sensorLala[2] > sensorLimit){
+            doRight();
         }
+        else if(sensorLala[5] > sensorLimit || sensorLala[6] > sensorLimit || sensorLala[7] > sensorLimit){
+            doLeft();
+        }
+        else if(sensorLala > 900){ // Finish maze 
+            openGrip();
+            backward(15);
+            delay(500);
+            stop();
+            exit(0);
+        }
+        else if(sensorLala < sensorLimit){ // Maze logic
+            lightRed();
+            long right = measureRight();
+            long front = measureFront();
+            
+            if(right > 30){
+                delay(10);
+                turnRight();
+                Serial.print("Right");
+                lightRed();
+            }
+            else if(front < 15){
+                delay(10);
+                turnLeft();
+                lightRed();
+                Serial.println("Left: " + String(front) + ";");
+            }
+            else if(front < 15 && right < 15){
+                stop();
+                turnLeft();
+                if(front < 20){
+                    turnLeft();
+                }
+            }
+            else{
+                paulWay();
+                Serial.print("Paul");
+            }
+        }
+    }
+    else{
+        raceStart = start();
     }
 }
 
@@ -154,12 +161,20 @@ void countRightSensor(){
     rightRotationCount++;
 }
 
-void start(){
-    openGrip();
-    forwardByCM(34);
-    closeGrip();
-    turnLeftStart();
-    forwardByCM(5);
+boolean start(){
+    long front = measureFrontStart();
+    if(front < 20){
+        delay(3000);
+        openGrip();
+        forwardByCM(34);
+        closeGrip();
+        turnLeftStart();
+        forwardByCM(5);
+        
+        return true;
+    }
+
+    return false;
 }
 
 void forward(){
@@ -295,6 +310,17 @@ long measureFront(){
     //Front sensor
     digitalWrite(frontTrigger,LOW);
     delayMicroseconds(10);
+    digitalWrite(frontTrigger,HIGH);
+    digitalWrite(frontTrigger,LOW);
+    frontDistanceInCM = (pulseIn(frontEcho,HIGH)/2) / 29.1;
+    
+    return frontDistanceInCM;
+}
+
+long measureFrontStart(){
+    //Front sensor
+    digitalWrite(frontTrigger,LOW);
+    delayMicroseconds(100);
     digitalWrite(frontTrigger,HIGH);
     digitalWrite(frontTrigger,LOW);
     frontDistanceInCM = (pulseIn(frontEcho,HIGH)/2) / 29.1;
