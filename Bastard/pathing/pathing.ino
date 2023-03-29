@@ -51,6 +51,7 @@ void setup(){
 }
 
 void loop(){
+    lightGreen();
     // front = measureFront();
     // right = measureRight();
     // forward();
@@ -77,25 +78,27 @@ void loop(){
     // }
     long right = measureRight();
     long front = measureFront();
-
+    
     if(right > 30){
+        delay(10);
         turnRight();
         Serial.print("Right");
+        lightRed();
     }
-    else if(front < 20){
+    else if(front < 15){
+        delay(10);
         turnLeft();
+        lightRed();
         Serial.println("Left: " + String(front) + ";");
     }
-    /*else if(front < 20 && right < 20){
+    else if(front < 15 && right < 15){
         stop();
-        while(rightRotationCount < 8){
-            analogWrite(motorLeftForward,255);
-            analogWrite(motorRightForward,80);
+        turnLeft();
+        if(front < 20){
+            turnLeft();
         }
-        rightRotationCount = 0;
-        leftRotationCount = 0;
-        stop();
-    }*/
+        
+    }
     
     else{
         paulWay();
@@ -107,16 +110,15 @@ void loop(){
 void paulWay(){
     // used to keep the robot straight in the maze
     if(rightDistanceInCM > 6.5){
-        analogWrite(motorRightForward,200);
-        analogWrite(motorLeftForward,255);
+        analogWrite(motorRightForward,190);
+        analogWrite(motorLeftForward,250);
     }
-    else if(rightDistanceInCM < 4.5){
-        analogWrite(motorLeftForward,255);
-        analogWrite(motorRightForward,255);
+    else if(rightDistanceInCM < 6){
+        analogWrite(motorLeftForward,250);
+        analogWrite(motorRightForward,250);
     }
     else{
-        analogWrite(motorLeftForward,255);
-        analogWrite(motorRightForward,240);
+        forward();
     }
 }
 
@@ -190,7 +192,7 @@ void stop(){
 void turnLeft(){
     stop();
     while(rightRotationCount < 8){
-        analogWrite(motorRightForward,200);
+        analogWrite(motorRightForward,255);
         analogWrite(motorLeftBackward,190);
         // Serial.print(rightRotationCount);
     }
