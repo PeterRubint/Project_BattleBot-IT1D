@@ -23,7 +23,7 @@ void setupButtons();
 void idle();
 void moveForward(int movingSpeed);
 void moveBack(int movingSpeed);
-
+void forwardDistance(int ticksLeft, int v);
 //Sensor interrupts
 void CountA();
 void CountB();
@@ -32,27 +32,12 @@ void setup()
   Serial.begin(9600);
   setupMotors();
   setupButtons();
+  forwardDistance(40,150);
 }
 int countsLeft=0,previousCount;
 void loop() 
 {
-  //moveForward(255);
-  if (digitalRead(BUTTON_1)==LOW)
-  {
-     countsLeft=20;
-     previousCount=countA;
-     analogWrite( MOTOR_A2,255);
-  }
-  if (countsLeft>0)
-  {
-    countsLeft-=(countA-previousCount);
-    previousCount=countA;
-  }
-  else 
-   {
-    idle();
-   }
-  leds.show();
+  
   
 }
 
@@ -105,4 +90,17 @@ void moveForward(int movingSpeed)
 {
   analogWrite(MOTOR_A2,movingSpeed);
   analogWrite(MOTOR_B1,movingSpeed);
+}
+void forwardDistance(int ticksLeft, int v){
+  moveForward(v);
+  while(ticksLeft > 0){
+    previousState = state;
+    state = digitalRead(rotary1);
+    if(previousState != state){
+      ticksLeft--;
+      Serial.println(ticksLeft);
+    }
+  }
+  idle();
+  Serial.println("finish");  
 }

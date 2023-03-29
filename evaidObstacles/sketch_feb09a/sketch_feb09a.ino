@@ -1,3 +1,5 @@
+
+
 const int echoPin = 7;   //pin of the first button
 const int trigPin = 8;  //pin of the second button
 long duration;
