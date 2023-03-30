@@ -70,7 +70,6 @@ void setup(){
         pinMode(frontEcho,INPUT);
         pinMode(rightTrigger,OUTPUT);
         pinMode(rightEcho,INPUT);
-    start(); // start of maze
 }
 
 void loop(){
@@ -91,6 +90,8 @@ void loop(){
             analogWrite(motorRightForward,0);
             openGrip();
             backward(20);
+            turnLeftStart();
+            exit(0);
         }
         else if( sensorLala[3] > sensorLimit  || sensorLala[4] > sensorLimit ){ 
             if(sensorLala[0] > sensorLimit &&  sensorLala[1] > sensorLimit  && sensorLala[2] > sensorLimit){
@@ -111,6 +112,7 @@ void loop(){
         else if(sensorLala[5] > sensorLimit || sensorLala[6] > sensorLimit || sensorLala[7] > sensorLimit){
             doLeft();
         }
+        /*
         else if(sensorLala > 900){ // Finish maze 
             openGrip();
             backward(15);
@@ -118,6 +120,7 @@ void loop(){
             stop();
             exit(0);
         }
+        */
         else if(sensorLala < sensorLimit){ // Maze logic
             lightRed();
             long right = measureRight();
@@ -162,14 +165,14 @@ void countRightSensor(){
 }
 
 boolean start(){
-    long front = measureFrontStart();
+    long front = measureFront();
     if(front < 20){
-        delay(3000);
+        delay(1000);
         openGrip();
         forwardByCM(34);
         closeGrip();
         turnLeftStart();
-        forwardByCM(5);
+        forwardByCM(6);
         
         return true;
     }
@@ -183,7 +186,7 @@ void forward(){
 }
 
 void forwardByCM(int distance){
-    while(rightRotationCount < distance*2){ // 40 = 20cm 
+    while(rightRotationCount < distance*2){
         analogWrite(motorLeftForward,200);
         analogWrite(motorRightForward,193);
     }
@@ -200,7 +203,7 @@ void stop(){
 }
 
 void backward(int distance){
-    while(rightRotationCount < distance*2){ // 1cm = 2
+    while(rightRotationCount < distance*2){
         analogWrite(motorLeftBackward,200);
         analogWrite(motorRightBackward,193);
     }
@@ -224,15 +227,6 @@ void paulWay(){
     }
 }
 
-void oneRotationForward(){
-    while(rightRotationCount < 40){
-        forward();
-    }
-    rightRotationCount = 0;
-    leftRotationCount = 0;
-    stop();
-}
-
 void turnLeftStart(){
      while(rightRotationCount < 49){
         analogWrite(motorRightBackward, 190);
@@ -248,7 +242,6 @@ void turnLeft(){
     while(rightRotationCount < 8){
         analogWrite(motorRightForward,255);
         analogWrite(motorLeftBackward,190);
-        // Serial.print(rightRotationCount);
     }
     rightRotationCount = 0;
     leftRotationCount = 0;
@@ -280,13 +273,6 @@ void doLeft(){
     analogWrite(motorLeftForward,80);
 }
 
-void turnAround(){
-    stop();
-    analogWrite(motorLeftBackward,207);
-    analogWrite(motorRightForward,200);
-    delay(1000);
-}
-
 //Gripper
 void gripperServo(int pulse){
     for(int i = 0; i < gripperPulseRepeat;i++){
@@ -310,17 +296,6 @@ long measureFront(){
     //Front sensor
     digitalWrite(frontTrigger,LOW);
     delayMicroseconds(10);
-    digitalWrite(frontTrigger,HIGH);
-    digitalWrite(frontTrigger,LOW);
-    frontDistanceInCM = (pulseIn(frontEcho,HIGH)/2) / 29.1;
-    
-    return frontDistanceInCM;
-}
-
-long measureFrontStart(){
-    //Front sensor
-    digitalWrite(frontTrigger,LOW);
-    delayMicroseconds(100);
     digitalWrite(frontTrigger,HIGH);
     digitalWrite(frontTrigger,LOW);
     frontDistanceInCM = (pulseIn(frontEcho,HIGH)/2) / 29.1;
