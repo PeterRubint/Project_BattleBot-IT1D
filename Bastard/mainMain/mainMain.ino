@@ -218,6 +218,10 @@ void paulWay(){
         analogWrite(motorRightForward,190);
         analogWrite(motorLeftForward,250);
     }
+    else if(rightDistanceInCM == 0){
+        analogWrite(motorRightForward, 255);
+        analogWrite(motorLeftForward, 130);
+    }
     else if(rightDistanceInCM < 6){
         analogWrite(motorLeftForward,250);
         analogWrite(motorRightForward,250);
