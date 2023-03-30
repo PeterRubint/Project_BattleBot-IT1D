@@ -103,8 +103,6 @@ void setup() {
   moveForward();
   delay(700);
   idle();
-  
-  
   Serial.println("Beginning Race");
   while(!allBlack())
   {
@@ -120,7 +118,7 @@ void setup() {
   moveForward(200,200);
   delay(300);
   idle();
-  moveForward(0,250);
+  moveForward(0,170);
   while (allBlack() || mostlyBlack())
     pos=lineSensors.readLineBlack(sensorValues);
   idle();
@@ -253,7 +251,7 @@ void calibration()
   //begin the calibration process
    for(int i = 0; i < 2;i++)
    {
-        moveForward(180,180);
+        moveForward(170,180);
         for(uint8_t i = 0; i < 25 ; i++)
         {
             lineSensors.calibrate();
@@ -262,10 +260,10 @@ void calibration()
         }
         idle();
         
-        moveBackward(170,170);
+        moveBackward(160,170);
         delay(1000);
         idle();
-        moveForward(180,180);
+        moveForward(170,180);
         for(uint8_t i = 0; i < 25 ; i++)
         {
             lineSensors.calibrate();
@@ -273,7 +271,7 @@ void calibration()
             Serial.println(i);
         }
         idle();
-        moveBackward(170,170);
+        moveBackward(180,170);
         delay(1000);
         idle();
           
@@ -281,7 +279,7 @@ void calibration()
     Serial.println("Calibration done");
     //end of the calibration
     idle();
-    moveForward(150,150);
+    moveForward(140,150);
     delay(500);
     idle();
     //note the maximum and minimum values recorded during the calibration process
