@@ -36,8 +36,6 @@ int sensorLimit = 600;
 #define frontEcho 7
 #define rightTrigger 12
 #define rightEcho 13
-long frontDistanceInCM, rightDistanceInCM;
-long front, right;
 
 //neo pixel
 #define pixelPin 4
@@ -80,9 +78,6 @@ void loop(){
             Serial.print(sensorLala[i]);
             Serial.print('\t');
         }
-        Serial.println();
-        Serial.print("Distance = ");
-        Serial.println(" cm");
 
         //Line following logic
         if(sensorLala[0] > 900 && sensorLala[1] > 900 && sensorLala[2] > 900 && sensorLala[3] > 900 && sensorLala[4] > 900 && sensorLala[5] > 900 && sensorLala[6] > 900 && sensorLala[7] > 900){
@@ -127,16 +122,10 @@ void loop(){
             long front = measureFront();
             
             if(right > 30){
-                delay(10);
+                
                 turnRight();
                 Serial.print("Right");
                 lightRed();
-            }
-            else if(front < 15){
-                delay(10);
-                turnLeft();
-                lightRed();
-                Serial.println("Left: " + String(front) + ";");
             }
             else if(front < 15 && right < 15){
                 stop();
@@ -144,6 +133,12 @@ void loop(){
                 if(front < 20){
                     turnLeft();
                 }
+            }
+            else if(front < 15){
+                
+                turnLeft();
+                lightRed();
+                Serial.println("Left: " + String(front) + ";");
             }
             else{
                 paulWay();
@@ -214,12 +209,15 @@ void backward(int distance){
 
 void paulWay(){
     // used to keep the robot straight in the maze
+    long rightDistanceInCM = measureRight();
+    long frontDistanceInCM = measureFront();
+
     if(rightDistanceInCM > 6.5){
         analogWrite(motorRightForward,190);
         analogWrite(motorLeftForward,250);
     }
     else if(rightDistanceInCM < 6){
-        analogWrite(motorLeftForward,250);
+        analogWrite(motorLeftForward,170);
         analogWrite(motorRightForward,250);
     }
     else{
@@ -252,7 +250,7 @@ void turnRight(){
     stop();
     while(rightRotationCount < 8){
         analogWrite(motorLeftForward,255);
-        analogWrite(motorRightForward,80);
+        analogWrite(motorRightForward,90);
     }
     rightRotationCount = 0;
     leftRotationCount = 0;
@@ -298,7 +296,7 @@ long measureFront(){
     delayMicroseconds(10);
     digitalWrite(frontTrigger,HIGH);
     digitalWrite(frontTrigger,LOW);
-    frontDistanceInCM = (pulseIn(frontEcho,HIGH)/2) / 29.1;
+    long frontDistanceInCM = (pulseIn(frontEcho,HIGH)/2) / 29.1;
     
     return frontDistanceInCM;
 }
@@ -309,7 +307,7 @@ long measureRight(){
     delayMicroseconds(10);
     digitalWrite(rightTrigger,HIGH);
     digitalWrite(rightTrigger,LOW);
-    rightDistanceInCM = (pulseIn(rightEcho,HIGH)/2) / 29.1;
+    long rightDistanceInCM = (pulseIn(rightEcho,HIGH)/2) / 29.1;
     
     return  rightDistanceInCM;
 
