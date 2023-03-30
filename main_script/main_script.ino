@@ -140,7 +140,7 @@ void loop() {
     if (isObjectAhead())
     {
       Serial.println("avoid object");
-      avoidObject1();  
+      avoidObject();  
       Serial.println("avoided object");
     }
     else
@@ -479,7 +479,7 @@ void closeGripper()
 }
 bool isObjectAhead()
 {
-  return (distance<=9);
+  return (distance<=15);
 }
 void readDistance()
 {
@@ -528,56 +528,44 @@ void avoidObject(){
   bool isTurningRight=false;
  
    if(isTurningLeft){
-    moveForward(255,0);
-    delay(700);
-    isTurningLeft=false;
-    idle();
+    moveForward(0,200);
     delay(900);
+    isTurningLeft=false;
     itMoved=true;
    }
     if(itMoved){
-    moveForward(255,255);
+    moveForward(200,200);
     delay(700);
-    idle();
     itMoved=false;
-    delay(500);
     isTurningRight=true;
     }
    if(isTurningRight){
-    moveForward(0,255);
-    delay(700);
+    moveForward(200,0);
+    delay(900);
     isTurningRight=false;
-    idle();
     itMoved=true;
    }
     if(itMoved){
-    idle();
-    moveForward(255,255);
-    delay(1700);
-    idle();
+    moveForward(200,200);
+    delay(700);
     itMoved=false;
-    delay(500);
     isTurningRight=true;
     }
     if(isTurningRight){
-    moveForward(0,255);
-    delay(700);
+    moveForward(200,0);
+    delay(900);
     isTurningRight=false;
-    idle();
-    itMoved=true;
+    isTurningLeftAgain=true;
    }
     if(itMoved){
-    idle();
-    moveForward(255,255);
+    moveForward(200,200);
     delay(800);
-    idle();
     itMoved=false;
-    delay(500);
     isTurningLeftAgain=true;
     }
   if(isTurningLeftAgain){
-    moveForward(255,0);
-    delay(700);
+    moveForward(0,200);
+    delay(900);
     isTurningLeftAgain=false;
     idle();
     }
