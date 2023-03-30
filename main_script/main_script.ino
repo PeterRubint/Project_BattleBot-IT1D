@@ -97,7 +97,7 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT); // Sets the trigPin as an Output
   pinMode(ECHO_PIN, INPUT); // Sets the echoPin as an Input
   setup_motor_pins();
-  //setupButtons();
+  
   setupLineSensors();
   calibration();
   idle();
@@ -117,8 +117,7 @@ Serial.println("Beginning Race");
   delay(500);
   closeGripper();
   Serial.println("Picked up the object");
-  //moveForward(200,200);
-  //delay(300);
+ 
   idle();
   moveForward(0,170);
   delay(1000);
@@ -145,6 +144,7 @@ void loop() {
     if (isObjectAhead())
     {
       Serial.println("avoid object");
+      idle();
       avoidObject();  
       Serial.println("avoided object");
     }
@@ -168,7 +168,21 @@ void loop() {
     leds.clear();
     delay(1000);
   }
+
+  //test
+
+//    readDistance();
+//    if (isObjectAhead())
+//    {
+//      Serial.println("avoid object");
+//      avoidObject();  
+//      Serial.println("avoided object");
+//    }else {
+//      idle();
+//      }
 }
+
+
 
 //MOTOR FUNCTIONS
 void idle()
@@ -488,7 +502,7 @@ void closeGripper()
 }
 bool isObjectAhead()
 {
-  return (distance<=15);
+  return (distance<=13);
 }
 void readDistance()
 {
@@ -542,50 +556,55 @@ void avoidObject(){
    idle();
    if(isTurningLeft)
    {
+       idle();
       moveForward(0,230);
-      delay(400);
+      delay(600);
       isTurningLeft=false;
       itMoved=true;
    }
     if(itMoved)
    {
+    idle();
     moveForward(200,200);
-    delay(400);
+    delay(900);
     itMoved=false;
     isTurningRight=true;
    }
    if(isTurningRight)
    {
+    idle();
     moveForward(230,0);
-    delay(500);
+    delay(900);
     isTurningRight=false;
     itMoved=true;
    }
     if(itMoved)
    {
-    moveForward(200,200);
-    delay(700);
-    itMoved=false;
-    isTurningRight=true;
-   }
-    if(isTurningRight){
-    moveForward(200,0);
-    delay(500);
-    isTurningRight=false;
-    isTurningLeftAgain=true;
-   }
-    if(itMoved)
-   {
-    moveForward(200,200);
-    delay(600);
-    itMoved=false;
-    isTurningLeftAgain=true;
-   }
-  if(isTurningLeftAgain)
-   {
-    moveForward(0,200);
-    delay(500);
-    isTurningLeftAgain=false;
     idle();
+    moveForward(200,200);
+    delay(1000);
+    itMoved=false;
+   isTurningRight=true;
    }
+//    if(isTurningRight){
+//    moveForward(220,0);
+//    delay(500);
+//    isTurningRight=false;
+//   itMoved=true;
+//   }
+//    if(itMoved)
+//   {
+//    moveForward(200,200);
+//    delay(700);
+//    itMoved=false;
+//    isTurningLeftAgain=true;
+//   }
+//  if(isTurningLeftAgain)
+//   {
+//    moveForward(0,200);
+//    delay(500);
+//    isTurningLeftAgain=false;
+//    idle();
+//   }
+   // isTurningLeftAgain=true;
 }
