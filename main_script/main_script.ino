@@ -18,7 +18,8 @@ const int  MOTOR_A1=11;
 const int MOTOR_A2=5;
 const int MOTOR_B1=6;
 const int MOTOR_B2=9;
-
+const int MIN_LEFT=180;
+const int MIN_RIGHT=180;
 //MOTOR ROTATION SENSORS
 const int MOTOR_R1=3;
 const int MOTOR_R2=2;
@@ -100,24 +101,30 @@ void setup() {
   setupLineSensors();
   calibration();
   idle();
-  moveForward();
+  moveForward(MIN_RIGHT,MIN_LEFT);
   delay(700);
   idle();
-  Serial.println("Beginning Race");
+Serial.println("Beginning Race");
   while(!allBlack())
   {
     pos=lineSensors.readLineBlack(sensorValues);
     showSensorValues();
     beginRace();
   }
+
   Serial.println("Picking up object");
   idle();
-  delay(1000);
+  delay(500);
   closeGripper();
   Serial.println("Picked up the object");
-  moveForward(200,200);
-  delay(300);
+  //moveForward(200,200);
+  //delay(300);
   idle();
+  moveForward(0,170);
+  delay(1000);
+  idle();
+  moveForward(MIN_RIGHT,MIN_LEFT);
+  delay(500);
   moveForward(0,170);
   while (allBlack() || mostlyBlack())
     pos=lineSensors.readLineBlack(sensorValues);
@@ -187,6 +194,7 @@ void setup_motor_pins()
 void moveForward(int powerA=255,int powerB=255)
 {
   leds.clear();
+  
   if (powerA==powerB)
   leds.fill(BLUE,2,2);
   else if (powerA>powerB)
@@ -194,6 +202,8 @@ void moveForward(int powerA=255,int powerB=255)
   else
     leds.fill(BLUE,3,1);
   leds.show(); 
+  if (powerA>=20)
+    powerA-=20;
   analogWrite(MOTOR_A2,powerA);
   analogWrite(MOTOR_B1,powerB);
 }
@@ -209,6 +219,8 @@ void moveBackward(int powerA=255,int powerB=255)
   else
     leds.fill(RED,1,1);
   leds.show();
+  if (powerA>=20)
+    powerA-=20;
   analogWrite(MOTOR_A1,powerA);
   analogWrite(MOTOR_B2,powerB);
 }
@@ -251,7 +263,7 @@ void calibration()
   //begin the calibration process
    for(int i = 0; i < 2;i++)
    {
-        moveForward(170,180);
+        moveForward(MIN_RIGHT+20,MIN_LEFT+20);
         for(uint8_t i = 0; i < 25 ; i++)
         {
             lineSensors.calibrate();
@@ -260,10 +272,10 @@ void calibration()
         }
         idle();
         
-        moveBackward(160,170);
+        moveBackward(MIN_RIGHT,MIN_LEFT);
         delay(1000);
         idle();
-        moveForward(170,180);
+        moveForward(MIN_RIGHT,MIN_LEFT);
         for(uint8_t i = 0; i < 25 ; i++)
         {
             lineSensors.calibrate();
@@ -271,7 +283,7 @@ void calibration()
             Serial.println(i);
         }
         idle();
-        moveBackward(180,170);
+        moveBackward(MIN_RIGHT,MIN_LEFT);
         delay(1000);
         idle();
           
@@ -279,7 +291,7 @@ void calibration()
     Serial.println("Calibration done");
     //end of the calibration
     idle();
-    moveForward(140,150);
+    moveForward(MIN_RIGHT+20,MIN_LEFT+20);
     delay(500);
     idle();
     //note the maximum and minimum values recorded during the calibration process
@@ -381,7 +393,7 @@ void lineFollow()
   {
     idle();
     moveForward(180,180);
-    delay(500);
+    delay(300);
     idle();
     //if the line is still black then this is the end of the race and the object will be dropped
     pos=lineSensors.readLineBlack(sensorValues);
@@ -389,7 +401,6 @@ void lineFollow()
     {
       openGripper();
       isRaceFinished=true;
-      
     }
   }
   else if (allWhite())
@@ -524,47 +535,57 @@ void avoidObject(){
   bool isTurningLeft=true;
   bool isTurningLeftAgain=false;
   bool isTurningRight=false;
- 
-   if(isTurningLeft){
-    moveForward(0,200);
-    delay(900);
-    isTurningLeft=false;
-    itMoved=true;
+   leds.clear();
+   leds.fill(ORANGE,0,4);
+   leds.show();
+   delay(500);
+   idle();
+   if(isTurningLeft)
+   {
+      moveForward(0,230);
+      delay(400);
+      isTurningLeft=false;
+      itMoved=true;
    }
-    if(itMoved){
+    if(itMoved)
+   {
     moveForward(200,200);
-    delay(700);
+    delay(400);
     itMoved=false;
     isTurningRight=true;
-    }
-   if(isTurningRight){
-    moveForward(200,0);
-    delay(900);
+   }
+   if(isTurningRight)
+   {
+    moveForward(230,0);
+    delay(500);
     isTurningRight=false;
     itMoved=true;
    }
-    if(itMoved){
+    if(itMoved)
+   {
     moveForward(200,200);
     delay(700);
     itMoved=false;
     isTurningRight=true;
-    }
+   }
     if(isTurningRight){
     moveForward(200,0);
-    delay(900);
+    delay(500);
     isTurningRight=false;
     isTurningLeftAgain=true;
    }
-    if(itMoved){
+    if(itMoved)
+   {
     moveForward(200,200);
-    delay(800);
+    delay(600);
     itMoved=false;
     isTurningLeftAgain=true;
-    }
-  if(isTurningLeftAgain){
+   }
+  if(isTurningLeftAgain)
+   {
     moveForward(0,200);
-    delay(900);
+    delay(500);
     isTurningLeftAgain=false;
     idle();
-    }
+   }
 }
