@@ -1,4 +1,19 @@
-//Testing file for reflectance sensor
+/* 
+ ______     ______     ______     ______   ______     ______     _____    
+/\  == \   /\  __ \   /\  ___\   /\__  _\ /\  __ \   /\  == \   /\  __-.  
+\ \  __<   \ \  __ \  \ \___  \  \/_/\ \/ \ \  __ \  \ \  __<   \ \ \/\ \ 
+ \ \_____\  \ \_\ \_\  \/\_____\    \ \_\  \ \_\ \_\  \ \_\ \_\  \ \____- 
+  \/_____/   \/_/\/_/   \/_____/     \/_/   \/_/\/_/   \/_/ /_/   \/____/ 
+                                                                                                                                                  
+   Authors: Joey Krämer, Peter Rubint
+   Final release: 31/03/2023
+
+   Description: This code will guide a purpose-built robot controlled by an Arduino Nano,
+   to solve a maze using the wall-following algorithm, detecting the walls with
+   2 ultrasonic distance sensors, and carrying a small object from start to finish.
+
+*/
+
 //inlcude
 #include <QTRSensors.h> // sensor line following
 #include <Adafruit_NeoPixel.h> // Neo pixel
@@ -72,7 +87,7 @@ void setup(){
 
 void loop(){
 
-    if(raceStart){
+    if(raceStart){ // if the start sequence has been completed, the robot enters the logic to solve the maze
         qtr.read(sensorLala);
         for (uint8_t i = 0; i < SensorCount; i++){
             Serial.print(sensorLala[i]);
@@ -137,12 +152,12 @@ void loop(){
             }
         }
     }
-    else{
+    else{ // Initiate the start sequence if it hasn't been done yet
         raceStart = start();
     }
 }
 
-void countLeftSensor(){
+void countLeftSensor(){ //Interrupt method to rotate the wheels using pulses
     leftRotationCount++;
 }
 
@@ -150,7 +165,7 @@ void countRightSensor(){
     rightRotationCount++;
 }
 
-boolean start(){
+boolean start(){ // Start sequence, object pickup and maze entry
     long front = measureFront();
     if(front < 25){
         delay(1000);
@@ -248,7 +263,7 @@ void turnRight(){
     stop();
 }
 
-void doRight(){
+void doRight(){ //Strafe slightly to the right, used for small trajectory adjustments
     analogWrite(motorLeftBackward,0);
     analogWrite(motorRightBackward,0);
     analogWrite(motorLeftForward,200);
@@ -280,7 +295,7 @@ void closeGrip(){
     gripperServo(gripperClosePulse);
 }
 
-//Ultrasonic
+//Ultrasonic distance measurement
 long measureFront(){
     //Front sensor
     digitalWrite(frontTrigger,LOW);
