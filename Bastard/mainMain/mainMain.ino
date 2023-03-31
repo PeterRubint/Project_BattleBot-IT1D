@@ -70,6 +70,8 @@ void setup(){
         pinMode(motorRightForward,INPUT);
         pinMode(motorRightBackward,INPUT);
         pinMode(gripper,INPUT);
+    //Neo Pixel
+        neoPixel.begin();
     //line sensors
         qtr.setTypeAnalog();
         qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
@@ -148,6 +150,7 @@ void loop(){
             }
             else{
                 paulWay();
+                lightGreen();
                 Serial.print("Paul");
             }
         }
