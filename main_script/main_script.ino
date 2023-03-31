@@ -119,7 +119,7 @@ Serial.println("Beginning Race");
   Serial.println("Picked up the object");
  
   idle();
-  moveForward(0,170);
+  moveForward(0,200);
   delay(1000);
   idle();
   moveForward(MIN_RIGHT,MIN_LEFT);
@@ -407,14 +407,15 @@ void lineFollow()
   {
     idle();
     moveForward(180,180);
-    delay(300);
+    delay(200);
     idle();
     //if the line is still black then this is the end of the race and the object will be dropped
     pos=lineSensors.readLineBlack(sensorValues);
-    if (allBlack())
+    if (allBlack() || mostlyBlack())
     {
       openGripper();
       isRaceFinished=true;
+      return ;
     }
   }
   else if (allWhite())
