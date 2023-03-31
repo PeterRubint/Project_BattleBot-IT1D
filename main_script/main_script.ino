@@ -61,10 +61,6 @@ void idle();//keeps the motors still
 void moveForward(int powerA=255,int powerB=255);//move the robot forward
 void moveBackward(int powerA=255,int powerB=255);//move the robot backwards
 
-// ROBOT CONTROL FUNCTIONS
-void setupButtons();
-void button_control();
-
 //LINE SENSORS
 void setupLineSensors();
 void calibration();
@@ -97,12 +93,8 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT); // Sets the trigPin as an Output
   pinMode(ECHO_PIN, INPUT); // Sets the echoPin as an Input
   setup_motor_pins();
-  
   setupLineSensors();
   calibration();
-  idle();
-  moveForward(MIN_RIGHT,MIN_LEFT);
-  delay(700);
   idle();
 Serial.println("Beginning Race");
   while(!allBlack())
@@ -111,35 +103,31 @@ Serial.println("Beginning Race");
     showSensorValues();
     beginRace();
   }
-
   Serial.println("Picking up object");
   idle();
-  delay(500);
   closeGripper();
   Serial.println("Picked up the object");
- 
   idle();
-  moveForward(0,200);
-  delay(1000);
-  idle();
-  moveForward(MIN_RIGHT,MIN_LEFT);
-  delay(500);
   moveForward(0,170);
-  while (allBlack() || mostlyBlack())
-    pos=lineSensors.readLineBlack(sensorValues);
+  delay(1200);
+  if (allBlack() || mostlyBlack())
+  {
+    while (allBlack() || mostlyBlack())
+      pos=lineSensors.readLineBlack(sensorValues);
+    idle();
+  }
   idle();
-  Serial.println("Beginning race");
-  
+  moveForward(180,180);
+  delay(300);
+  idle();
 
 }
 
 void loop() {
   if (isRaceFinished==false)
   {
-   // button_control();
     leds.show();
     pos=lineSensors.readLineBlack(sensorValues);
-    //  showSensorValues();
     readDistance();
     if (isObjectAhead())
     {
@@ -239,31 +227,7 @@ void moveBackward(int powerA=255,int powerB=255)
   analogWrite(MOTOR_B2,powerB);
 }
 
-//CONTROL FUNCTIONS
-void setupButtons()
-{
-  pinMode(BUTTON1,INPUT);
-  pinMode(BUTTON2,INPUT);
-  pinMode(BUTTON3,INPUT);
-}
 
-void button_control()
-{
-  buttonState1=digitalRead(BUTTON1);
-  buttonState2=digitalRead(BUTTON2);
-  if (buttonState1==LOW)
-  {
-    moveForward(255,255);
-  }
-  else if (buttonState2==LOW)
-  {
-    moveBackward(255,255);
-  }
-  else 
-  {
-    idle();
-  }
-}
 
 //LINE SENSOR FUNCTIONS
 void setupLineSensors()
@@ -275,51 +239,48 @@ void setupLineSensors()
 void calibration()
 {
   //begin the calibration process
-   for(int i = 0; i < 2;i++)
-   {
-        moveForward(MIN_RIGHT+20,MIN_LEFT+20);
-        for(uint8_t i = 0; i < 25 ; i++)
-        {
-            lineSensors.calibrate();
-            Serial.print("Calibration: ");
-            Serial.println(i);
-        }
-        idle();
-        
-        moveBackward(MIN_RIGHT,MIN_LEFT);
-        delay(1000);
-        idle();
-        moveForward(MIN_RIGHT,MIN_LEFT);
-        for(uint8_t i = 0; i < 25 ; i++)
-        {
-            lineSensors.calibrate();
-            Serial.print("Calibration: ");
-            Serial.println(i);
-        }
-        idle();
-        moveBackward(MIN_RIGHT,MIN_LEFT);
-        delay(1000);
-        idle();
-          
-    }
-    Serial.println("Calibration done");
-    //end of the calibration
-    idle();
-    moveForward(MIN_RIGHT+20,MIN_LEFT+20);
-    delay(500);
-    idle();
-    //note the maximum and minimum values recorded during the calibration process
-    for (int i=0;i<SENSOR_COUNT;i++)
+//   for(int i = 0; i < 2;i++)
+//   {
+//        moveForward(MIN_RIGHT+20,MIN_LEFT+20);
+//        for(uint8_t i = 0; i < 25 ; i++)
+//        {
+//            lineSensors.calibrate();
+//            Serial.print("Calibration: ");
+//            Serial.println(i);
+//        }
+//        idle();
+//        
+//        moveBackward(MIN_RIGHT,MIN_LEFT);
+//        delay(1000);
+//        idle();
+//        moveForward(MIN_RIGHT,MIN_LEFT);
+//        for(uint8_t i = 0; i < 25 ; i++)
+//        {
+//            lineSensors.calibrate();
+//            Serial.print("Calibration: ");
+//            Serial.println(i);
+//        }
+//        idle();
+//        moveBackward(MIN_RIGHT,MIN_LEFT);
+//        delay(1000);
+//        idle();
+//          
+//  }
+  
+    moveForward(MIN_RIGHT,MIN_LEFT);
+    for(int i=0;i<25;i++)
     {
-      Serial.print(lineSensors.calibrationOn.minimum[i]);
-      Serial.print(" ");
+        lineSensors.calibrate();
     }
-    Serial.println();
-    for (int i=0;i<SENSOR_COUNT;i++)
-    {
-      Serial.print(lineSensors.calibrationOn.maximum[i]);
-      Serial.print(" ");
-    }
+    idle();
+//    moveBackward(MIN_RIGHT,MIN_LEFT);
+//    for (int i=0;i<25;i++)
+//    {
+//      lineSensors.calibrate();
+//    }
+//    idle();
+//  
+    
 }
 void showSensorValues()
 {
@@ -411,9 +372,10 @@ void lineFollow()
     idle();
     //if the line is still black then this is the end of the race and the object will be dropped
     pos=lineSensors.readLineBlack(sensorValues);
-    if (allBlack() || mostlyBlack())
+    if (allBlack())
     {
       openGripper();
+      idle();
       isRaceFinished=true;
       return ;
     }
@@ -448,11 +410,9 @@ void lineFollow()
   }
  else if (mostlyBlack())
  {
-  idle();
-  moveForward(220,220);
-  while (mostlyBlack())
-   pos=lineSensors.readLineBlack(sensorValues);
-  idle();
+   moveForward(200,200);
+   delay(200);
+   idle();
  }
   else
   idle();
@@ -520,30 +480,6 @@ void readDistance()
   //Prints the distance on monitor
   Serial.print("Distance:");
   Serial.println(distance);
-}
-void avoidObject1()
-{
-  int turningTime=420;
-  idle();
-  leds.clear();
-  leds.fill(ORANGE,2,2);
-  leds.show();
-  delay(3000);
-  //get off the track
-  moveForward(200,0);
-  delay(turningTime);
-  idle();
-  moveForward(200,200);
-  delay(1100);
-  idle();
-  moveForward(0,200);
-  delay(2*turningTime);
-  idle();
-  moveForward(200,200);
-  while (allWhite() || mostlyBlack())
-    pos=lineSensors.readLineBlack(sensorValues);
-  idle();
-  
 }
 void avoidObject(){
   bool itMoved=false;
