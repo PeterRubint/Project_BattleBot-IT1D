@@ -84,7 +84,7 @@ void loop(){
             analogWrite(motorLeftForward,0);
             analogWrite(motorRightForward,0);
             openGrip();
-            backward(20);
+            backward(30);
             turnLeftStart();
             exit(0);
         }
@@ -107,15 +107,6 @@ void loop(){
         else if(sensorLala[5] > sensorLimit || sensorLala[6] > sensorLimit || sensorLala[7] > sensorLimit){
             doLeft();
         }
-        /*
-        else if(sensorLala > 900){ // Finish maze 
-            openGrip();
-            backward(15);
-            delay(500);
-            stop();
-            exit(0);
-        }
-        */
         else if(sensorLala < sensorLimit){ // Maze logic
             lightRed();
             long right = measureRight();
@@ -161,7 +152,7 @@ void countRightSensor(){
 
 boolean start(){
     long front = measureFront();
-    if(front < 20){
+    if(front < 25){
         delay(1000);
         openGrip();
         forwardByCM(34);
