@@ -157,17 +157,7 @@ void loop() {
     delay(1000);
   }
 
-  //test
-
-//    readDistance();
-//    if (isObjectAhead())
-//    {
-//      Serial.println("avoid object");
-//      avoidObject();  
-//      Serial.println("avoided object");
-//    }else {
-//      idle();
-//      }
+  
 }
 
 
@@ -238,49 +228,12 @@ void setupLineSensors()
 
 void calibration()
 {
-  //begin the calibration process
-//   for(int i = 0; i < 2;i++)
-//   {
-//        moveForward(MIN_RIGHT+20,MIN_LEFT+20);
-//        for(uint8_t i = 0; i < 25 ; i++)
-//        {
-//            lineSensors.calibrate();
-//            Serial.print("Calibration: ");
-//            Serial.println(i);
-//        }
-//        idle();
-//        
-//        moveBackward(MIN_RIGHT,MIN_LEFT);
-//        delay(1000);
-//        idle();
-//        moveForward(MIN_RIGHT,MIN_LEFT);
-//        for(uint8_t i = 0; i < 25 ; i++)
-//        {
-//            lineSensors.calibrate();
-//            Serial.print("Calibration: ");
-//            Serial.println(i);
-//        }
-//        idle();
-//        moveBackward(MIN_RIGHT,MIN_LEFT);
-//        delay(1000);
-//        idle();
-//          
-//  }
-  
     moveForward(MIN_RIGHT,MIN_LEFT);
     for(int i=0;i<25;i++)
     {
         lineSensors.calibrate();
     }
-    idle();
-//    moveBackward(MIN_RIGHT,MIN_LEFT);
-//    for (int i=0;i<25;i++)
-//    {
-//      lineSensors.calibrate();
-//    }
-//    idle();
-//  
-    
+    idle();    
 }
 void showSensorValues()
 {
@@ -439,10 +392,6 @@ void beginRace()
   idle();
  }
 }
-
-
-
-
 void gripperServo(int pulse)
 {
     for(int i = 0; i < GRIPPER_PULSE_REPEAT;i++)
@@ -523,25 +472,5 @@ void avoidObject(){
     itMoved=false;
    isTurningRight=true;
    }
-//    if(isTurningRight){
-//    moveForward(220,0);
-//    delay(500);
-//    isTurningRight=false;
-//   itMoved=true;
-//   }
-//    if(itMoved)
-//   {
-//    moveForward(200,200);
-//    delay(700);
-//    itMoved=false;
-//    isTurningLeftAgain=true;
-//   }
-//  if(isTurningLeftAgain)
-//   {
-//    moveForward(0,200);
-//    delay(500);
-//    isTurningLeftAgain=false;
-//    idle();
-//   }
-   // isTurningLeftAgain=true;
+
 }
